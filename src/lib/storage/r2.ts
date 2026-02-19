@@ -1,20 +1,37 @@
-// Cloudflare R2 Storage Client
-// TODO: Set up R2 client with @aws-sdk/client-s3
-import { S3Client } from "@aws-sdk/client-s3";
+import { readFile } from "fs/promises";
+import { s3 } from "./client";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import path from "path";
 
-import "dotenv/config";
+const imagePath = path.resolve(
+  process.cwd(), // project root (where you run pnpm from)
+  "remotion/public/images/gogeta-front-trimmed.png",
+);
 
-const accessKeyId = process.env.R2_Access_Key_ID;
-const secretAccessKey = process.env.R2_Secret_Access_Key;
-if (!accessKeyId || !secretAccessKey) throw new Error("Missing R2 credentials");
+const buffer = await readFile(imagePath);
 
-export const s3 = new S3Client({
-  region: "auto",
-  endpoint: "https://93b5e52d46713e94ce36b96000f1d91f.r2.cloudflarestorage.com",
+// await s3.send(
+//   new PutObjectCommand({
+//     Bucket: "animeroom",
+//     Key: "gogeta-front-trimmed.png",
+//     Body: buffer,
+//     ContentType: "image/png",
+//   }),
+// );
 
-  credentials: {
-    // Provide your R2 Access Key ID and Secret Access Key
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-  },
-});
+export const getTempUrl = async () => {
+  return await getSignedUrl(
+    s3,
+    new GetObjectCommand({
+      Bucket: "animeroom",
+      Key: "gogeta-front-trimmed.png",
+    }),
+    { expiresIn: 3600 },
+  );
+};

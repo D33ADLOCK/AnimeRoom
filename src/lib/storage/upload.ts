@@ -1,4 +1,4 @@
-import { s3 } from "./r2";
+import { s3 } from "./client";
 import { Readable } from "node:stream";
 import { Upload } from "@aws-sdk/lib-storage";
 import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
