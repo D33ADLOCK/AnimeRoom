@@ -1,0 +1,21 @@
+{
+  "name": "anime-room-remotion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio Root.tsx",
+    "render": "remotion render Root.tsx"
+  },
+  "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.36.0",
+    "@remotion/tailwind-v4": "4.0.422",
+    "remotion": "^4.0.422",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.422",
+    "@tailwindcss/postcss": "^4.1.18",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18"
+  }
+}

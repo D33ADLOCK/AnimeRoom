@@ -1,0 +1,73 @@
+{
+  "id": "49e416d3-abdc-4e5b-bf36-8eb0c0b1bc77",
+  "prevId": "86edc1cb-ac43-4683-ae5c-4e02fc2b6328",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.roastBattles": {
+      "name": "roastBattles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "roastBattles_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "prompt": {
+          "name": "prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "character1_Name": {
+          "name": "character1_Name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "character2_Name": {
+          "name": "character2_Name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hattle_data": {
+          "name": "hattle_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
