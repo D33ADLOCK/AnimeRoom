@@ -3,21 +3,23 @@ import Introduction from "./scenes/Introduction";
 import CharacterStats from "./scenes/CharacterStats";
 import BattleRound from "./scenes/BattleRound";
 
+// TODO: These will come from the manifest props once the full pipeline is wired up.
+// For now, using hardcoded R2 URLs as placeholders.
+const R2 = "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev";
+
 export const MyComposition = () => {
-  // Images
-  const bgImage = staticFile("images/background.png");
+  // ── Common assets (will come from manifest.common) ──
+  const bgImage = `${R2}/common/images/background.png`;
+  const announcerIntro = `${R2}/common/images/announcer-image.png`;
+  const announcerAudio = `${R2}/common/audio/announcer/dbz-announcer-opening-4.mp3`;
+
+  // ── Per-battle character images — local public/ (will come from manifest later) ──
   const gogetaSingle = staticFile("images/gogeta-front-trimmed.png");
   const vegitoSingle = staticFile("images/vegito-front-trimmed.png");
   const gogetaSide = staticFile("images/gogeta-side-trimmed.png");
   const vegitoSide = staticFile("images/vegito-side-trimmed.png");
   const vegitoProfile = staticFile("images/vegito-profile.png");
   const gogetaProfile = staticFile("images/gogeta-profile.png");
-  const announcerIntro = staticFile("images/announcer-image.png");
-
-  // Audios
-  const announcerAudio = staticFile(
-    "audio/announcer/dbz-announcer/dbz-announcer-opening-4.mp3",
-  );
 
   // Battle Audios
   const vegitoD1 = staticFile("audio/Vegito-d1.mp3");

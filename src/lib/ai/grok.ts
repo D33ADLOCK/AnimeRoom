@@ -43,7 +43,7 @@ ONLY RETURN THE JSON OBJECT.
   `.trim();
 };
 
-export async function generateStructuredOutput(userPrompt: string) {
+export async function generateScript(userPrompt: string) {
   const { output } = await generateText({
     model: xai("grok-4-1-fast-non-reasoning"),
     output: Output.object({

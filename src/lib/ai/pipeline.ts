@@ -1,7 +1,23 @@
-import { randomUUID } from "crypto";
-import { generateStructuredOutput } from "./grok";
 import { generateCharacterDialogues } from "./audio";
 import { generateCharacterImages } from "./images";
+import type { RoastBattleSchemaType } from "../schemas/roast-battle";
+
+// ─── Common R2 Assets ────────────────────────────────────────────────────────
+
+const R2_BASE = process.env.R2_PUBLIC_BASE_URL!;
+
+const ANNOUNCER_AUDIO_POOL = [
+  `${R2_BASE}/common/audio/announcer/announcer-opening-2.mp3`,
+  `${R2_BASE}/common/audio/announcer/announcer-opening-3.mp3`,
+  `${R2_BASE}/common/audio/announcer/announcer-opening-4.mp3`,
+  `${R2_BASE}/common/audio/announcer/dbz-announcer-opening-1.mp3`,
+  `${R2_BASE}/common/audio/announcer/dbz-announcer-opening-2.mp3`,
+  `${R2_BASE}/common/audio/announcer/dbz-announcer-opening-3.mp3`,
+  `${R2_BASE}/common/audio/announcer/dbz-announcer-opening-4.mp3`,
+] as const;
+
+const pickRandom = <T>(arr: readonly T[]): T =>
+  arr[Math.floor(Math.random() * arr.length)]!;
 
 // ─── Config ─────────────────────────────────────────────────────────────────
 
@@ -10,36 +26,42 @@ const VOICE_IDS = {
   character2: "VR6AewLTigWG4xSOukaG",
 };
 
-// ─── Script Generation ───────────────────────────────────────────────────────
-
-const userPrompt =
-  "Generate a roast battle between Goku and Naruto, make it super savage";
-
-const script = await generateStructuredOutput(userPrompt);
-if (!script) throw new Error("Failed to generate script from Grok");
-
-const jobId = randomUUID();
-console.log(`\n🎬 Starting pipeline for job: ${jobId}\n`);
-
-// ─── Character Setup ─────────────────────────────────────────────────────────
-
-const char1Rounds = script.rounds.filter((r) => r.attacker === "character1");
-const char2Rounds = script.rounds.filter((r) => r.attacker === "character2");
-
 // ─── Orchestration ───────────────────────────────────────────────────────────
 
-const generateAllDialogues = async () => {
+type CharacterRoundType = {
+  character1: {
+    char1Name: string;
+    char1Rounds: {
+      attacker: "character1" | "character2";
+      dialogue: string;
+      damage: number;
+    }[];
+  };
+  character2: {
+    char2Name: string;
+    char2Rounds: {
+      attacker: "character1" | "character2";
+      dialogue: string;
+      damage: number;
+    }[];
+  };
+};
+
+const generateAllDialogues = async (
+  characterRounds: CharacterRoundType,
+  jobId: string,
+) => {
   console.log("🎙  Generating all dialogues...");
   const [char1Dialogues, char2Dialogues] = await Promise.all([
     generateCharacterDialogues(
-      script.character1.name,
-      char1Rounds,
+      characterRounds.character1.char1Name,
+      characterRounds.character1.char1Rounds,
       VOICE_IDS.character1,
       jobId,
     ),
     generateCharacterDialogues(
-      script.character2.name,
-      char2Rounds,
+      characterRounds.character2.char2Name,
+      characterRounds.character2.char2Rounds,
       VOICE_IDS.character2,
       jobId,
     ),
@@ -48,7 +70,10 @@ const generateAllDialogues = async () => {
   return { char1Dialogues, char2Dialogues };
 };
 
-const generateAllImages = async () => {
+const generateAllImages = async (
+  script: RoastBattleSchemaType,
+  jobId: string,
+) => {
   console.log("🖼  Generating all images...");
   // Sequential per character to respect Replicate's rate limits
   const char1Images = await generateCharacterImages(
@@ -67,15 +92,36 @@ const generateAllImages = async () => {
 
 // ─── Main Entry Point ────────────────────────────────────────────────────────
 
-const runPipeline = async () => {
+export const runPipeline = async (
+  script: RoastBattleSchemaType,
+  jobId: string,
+) => {
+  const char1Rounds = script.rounds.filter((r) => r.attacker === "character1");
+  const char2Rounds = script.rounds.filter((r) => r.attacker === "character2");
+
+  const char1Name = script.character1.name;
+  const char2Name = script.character2.name;
+
+  const characterRounds = {
+    character1: { char1Name, char1Rounds },
+    character2: { char2Name, char2Rounds },
+  };
+
   const [dialogues, images] = await Promise.all([
-    generateAllDialogues(),
-    generateAllImages(),
+    generateAllDialogues(characterRounds, jobId),
+    generateAllImages(script, jobId),
   ]);
+
+  const commonAssets = {
+    background: `${R2_BASE}/common/images/background.png`,
+    announcerImage: `${R2_BASE}/common/images/announcer-image.png`,
+    announcerAudio: pickRandom(ANNOUNCER_AUDIO_POOL),
+  };
 
   const manifest = {
     jobId,
     script,
+    common: commonAssets,
     audio: dialogues,
     images,
   };
@@ -85,6 +131,3 @@ const runPipeline = async () => {
 
   return manifest;
 };
-
-const manifest = await runPipeline();
-console.log("\n📋 Manifest:", JSON.stringify(manifest, null, 2));
