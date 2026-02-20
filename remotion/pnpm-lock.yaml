@@ -11,9 +11,15 @@ importers:
       '@elevenlabs/elevenlabs-js':
         specifier: ^2.36.0
         version: 2.36.0
+      '@remotion/media-parser':
+        specifier: ^4.0.426
+        version: 4.0.426
       '@remotion/tailwind-v4':
         specifier: 4.0.425
         version: 4.0.425(@remotion/bundler@4.0.425(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(webpack@5.105.0)
+      mediabunny:
+        specifier: ^1.34.4
+        version: 1.34.4
       remotion:
         specifier: ^4.0.425
         version: 4.0.425(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -679,6 +685,9 @@ packages:
 
   '@remotion/media-parser@4.0.425':
     resolution: {integrity: sha512-ml1sqL5ABpVy12X/xZ+s90m8vIX+eGG4S7ZiCJ8Sj09zHWq4rjgJblOHTUR5+ovGZabw4MXUwQiC4/Dn2lKMPw==}
+
+  '@remotion/media-parser@4.0.426':
+    resolution: {integrity: sha512-5QvmK4VD1rOv4sgF7KrucSc5vuVYLG3eMquZo5aP/Z31+a4rQfpwOpZKM4DAzntghehZk7T2OqWUh8shqtIeyA==}
 
   '@remotion/media-utils@4.0.425':
     resolution: {integrity: sha512-Vu6xRi1tfmRHKf3rcI3XyX41QB0nFr/vxxPg9NYytnbSP7n6sdankjNyQ6NFayZN8LDBarfovvzBw3A7Gqf2jA==}
@@ -2542,6 +2551,8 @@ snapshots:
   '@remotion/licensing@4.0.425': {}
 
   '@remotion/media-parser@4.0.425': {}
+
+  '@remotion/media-parser@4.0.426': {}
 
   '@remotion/media-utils@4.0.425(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:

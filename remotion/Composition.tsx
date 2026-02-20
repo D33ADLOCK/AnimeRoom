@@ -1,64 +1,34 @@
-import { AbsoluteFill, Sequence, staticFile } from "remotion";
+import { AbsoluteFill, Sequence } from "remotion";
 import Introduction from "./scenes/Introduction";
 import CharacterStats from "./scenes/CharacterStats";
 import BattleRound from "./scenes/BattleRound";
-
+import { dummyManifest } from "./dummyManifest";
+import { prepareVideoProps } from "./prepareVideoProps";
+import { useCallback } from "react";
 // TODO: These will come from the manifest props once the full pipeline is wired up.
 // For now, using hardcoded R2 URLs as placeholders.
-const R2 = "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev";
+
+const newVideoProp = prepareVideoProps(dummyManifest);
 
 export const MyComposition = () => {
   // ── Common assets (will come from manifest.common) ──
-  const bgImage = `${R2}/common/images/background.png`;
-  const announcerIntro = `${R2}/common/images/announcer-image.png`;
-  const announcerAudio = `${R2}/common/audio/announcer/dbz-announcer-opening-4.mp3`;
+  const bgImage = newVideoProp.common.background;
+  const announcerIntro = newVideoProp.common.announcerImage;
+  const announcerAudio = newVideoProp.common.announcerAudio;
 
-  // ── Per-battle character images — local public/ (will come from manifest later) ──
-  const gogetaSingle = staticFile("images/gogeta-front-trimmed.png");
-  const vegitoSingle = staticFile("images/vegito-front-trimmed.png");
-  const gogetaSide = staticFile("images/gogeta-side-trimmed.png");
-  const vegitoSide = staticFile("images/vegito-side-trimmed.png");
-  const vegitoProfile = staticFile("images/vegito-profile.png");
-  const gogetaProfile = staticFile("images/gogeta-profile.png");
-
-  // Battle Audios
-  const vegitoD1 = staticFile("audio/Vegito-d1.mp3");
-  const vegitoD2 = staticFile("audio/Vegito-d2.mp3");
-  const vegitoD3 = staticFile("audio/Vegito-d3.mp3");
-  const gogetaD1 = staticFile("audio/gogeta-d1.mp3");
-  const gogetaD2 = staticFile("audio/gogeta-d2.mp3");
-  const gogetaD3 = staticFile("audio/gogeta-d3.mp3");
+  // ── Per-battle character images — local public/ (will come from
+  const firstCharacterside = newVideoProp.character.character1.images.side;
+  const secondCharacterside = newVideoProp.character.character2.images.side;
 
   // Skills data
-  const gogetaSkills = [
-    {
-      name: "Ego Shield",
-      color: "#F472B6",
-      desc: "Blocks facts. Takes double damage from receipts.",
-      letter: "E",
-    },
-    {
-      name: "Flex Projection",
-      color: "#A78BFA",
-      desc: "Shows achievements that never happened.",
-      letter: "F",
-    },
-  ];
+  const firstCharacterSkills = newVideoProp.character.character1.details.skills;
+  const secondCharacterSkills =
+    newVideoProp.character.character2.details.skills;
 
-  const vegitoSkills = [
-    {
-      name: "Ratio Beam",
-      color: "#38BDF8",
-      desc: "Instantly deletes any comment with zero likes.",
-      letter: "R",
-    },
-    {
-      name: "Cope Driver",
-      color: "#FBBF24",
-      desc: "Forces the opponent to explain why they lost for 10 minutes.",
-      letter: "C",
-    },
-  ];
+  // Data references to keep JSX clean
+  const char1 = newVideoProp.character.character1.details;
+  const char2 = newVideoProp.character.character2.details;
+  const rounds = newVideoProp.rounds;
 
   // Timeline constants
   const INTRO_END = 180;
@@ -86,137 +56,58 @@ export const MyComposition = () => {
         />
       </Sequence>
 
-      {/* ─── Gogeta Stats (image left) ─── */}
+      {/* ─── Character 1 Stats (image left) ─── */}
       <Sequence from={INTRO_END} durationInFrames={STATS_DURATION}>
         <CharacterStats
           background={bgImage}
-          characterImage={gogetaSide}
+          characterImage={firstCharacterside}
           side="left"
-          title="TikToker Gogeta"
-          caption="This is the test caption"
-          skills={gogetaSkills}
+          title={char1.title}
+          caption={char1.name}
+          skills={firstCharacterSkills}
         />
       </Sequence>
 
-      {/* ─── Vegito Stats (image right) ─── */}
+      {/* ─── Character 2 Stats (image right) ─── */}
       <Sequence
         from={INTRO_END + STATS_DURATION}
         durationInFrames={STATS_DURATION}
       >
         <CharacterStats
           background={bgImage}
-          characterImage={vegitoSide}
+          characterImage={secondCharacterside}
           side="right"
-          title="The L Taker Vegito"
-          caption="THis is just sample"
-          skills={vegitoSkills}
+          title={char2.title}
+          caption={char2.name}
+          skills={secondCharacterSkills}
         />
       </Sequence>
 
-      {/* ─── Round 1: Vegito roasts → Gogeta takes damage ─── */}
-      <Sequence from={statsEnd} durationInFrames={BATTLE_DURATION}>
-        <BattleRound
-          background={bgImage}
-          characterImage={vegitoSingle}
-          profileImage={gogetaProfile}
-          audio={vegitoD1}
-          name="Gogeta Blue"
-          chipfrom={100}
-          percentage={83}
-          chipStartFrame={CHIP_FRAME}
-          side="left"
-        />
-      </Sequence>
+      {/* ─── Dynamic Battle Rounds ─── */}
+      {rounds.map((round, index) => {
+        // Calculate the start time for this specific round based on its index
+        const sequenceStart = statsEnd + BATTLE_DURATION * index;
 
-      {/* ─── Round 2: Gogeta roasts → Vegito takes damage ─── */}
-      <Sequence
-        from={statsEnd + BATTLE_DURATION}
-        durationInFrames={BATTLE_DURATION}
-      >
-        <BattleRound
-          background={bgImage}
-          characterImage={gogetaSingle}
-          profileImage={vegitoProfile}
-          audio={gogetaD1}
-          name="Vegito Blue"
-          chipfrom={100}
-          percentage={76}
-          chipStartFrame={CHIP_FRAME}
-          side="right"
-        />
-      </Sequence>
-
-      {/* ─── Round 3: Vegito roasts → Gogeta takes damage ─── */}
-      <Sequence
-        from={statsEnd + BATTLE_DURATION * 2}
-        durationInFrames={BATTLE_DURATION}
-      >
-        <BattleRound
-          background={bgImage}
-          characterImage={vegitoSingle}
-          profileImage={gogetaProfile}
-          audio={vegitoD2}
-          name="Gogeta Blue"
-          chipfrom={83}
-          percentage={61}
-          chipStartFrame={CHIP_FRAME}
-          side="left"
-        />
-      </Sequence>
-
-      {/* ─── Round 4: Gogeta roasts → Vegito takes damage ─── */}
-      <Sequence
-        from={statsEnd + BATTLE_DURATION * 3}
-        durationInFrames={BATTLE_DURATION}
-      >
-        <BattleRound
-          background={bgImage}
-          characterImage={gogetaSingle}
-          profileImage={vegitoProfile}
-          audio={gogetaD2}
-          name="Vegito Blue"
-          chipfrom={76}
-          percentage={52}
-          chipStartFrame={CHIP_FRAME}
-          side="right"
-        />
-      </Sequence>
-
-      {/* ─── Round 5: Vegito roasts → Gogeta takes damage ─── */}
-      <Sequence
-        from={statsEnd + BATTLE_DURATION * 4}
-        durationInFrames={BATTLE_DURATION}
-      >
-        <BattleRound
-          background={bgImage}
-          characterImage={vegitoSingle}
-          profileImage={gogetaProfile}
-          audio={vegitoD3}
-          name="Gogeta Blue"
-          chipfrom={61}
-          percentage={38}
-          chipStartFrame={CHIP_FRAME}
-          side="left"
-        />
-      </Sequence>
-
-      {/* ─── Round 6: Gogeta roasts → Vegito takes damage ─── */}
-      <Sequence
-        from={statsEnd + BATTLE_DURATION * 5}
-        durationInFrames={BATTLE_DURATION}
-      >
-        <BattleRound
-          background={bgImage}
-          characterImage={gogetaSingle}
-          profileImage={vegitoProfile}
-          audio={gogetaD3}
-          name="Vegito Blue"
-          chipfrom={52}
-          percentage={28}
-          chipStartFrame={CHIP_FRAME}
-          side="right"
-        />
-      </Sequence>
+        return (
+          <Sequence
+            key={`round-${index}`}
+            from={sequenceStart}
+            durationInFrames={BATTLE_DURATION}
+          >
+            <BattleRound
+              background={bgImage}
+              characterImage={round.attackerImage}
+              profileImage={round.opponentProfile}
+              audio={round.dialogueAudio}
+              name={round.opponentName}
+              chipfrom={round.startingHealth}
+              percentage={round.endingHealth}
+              chipStartFrame={CHIP_FRAME}
+              side={round.attackerName === char1.name ? "right" : "left"} // Attacker is on the opposite side
+            />
+          </Sequence>
+        );
+      })}
     </AbsoluteFill>
   );
 };
