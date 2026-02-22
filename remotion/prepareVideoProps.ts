@@ -1,4 +1,4 @@
-import { ALL_FORMATS, Input, UrlSource } from "mediabunny";
+import { parseMedia } from "@remotion/media-parser";
 import { type ManifestType } from "./dummyManifest";
 
 type CharacterImageType = {
@@ -10,23 +10,26 @@ type CharacterImageType = {
 export const prepareVideoProps = (manifest: ManifestType) => {
   const { images, audio, common, script } = manifest;
 
-  const getImage = (charImage: CharacterImageType, angle: string) => {
-    return charImage.find((image) => angle === image.angle)?.publicUrl;
+  const getImage = (charImage: CharacterImageType, angle: string): string => {
+    const image = charImage.find((entry) => angle === entry.angle);
+    if (!image?.publicUrl) {
+      throw new Error(`Missing image URL for angle: ${angle}`);
+    }
+    return image.publicUrl;
   };
 
-  const getAudioDuration = async (src: string) => {
-    const input = new Input({
-      formats: ALL_FORMATS,
-      source: new UrlSource(src, {
-        getRetryDelay: () => null,
-      }),
-    });
-
-    try {
-      return await input.computeDuration();
-    } finally {
-      input.dispose();
+  const getDialogueUrl = (
+    dialogues: ManifestType["audio"]["char1Dialogues"],
+    index: number,
+    attacker: ManifestType["script"]["rounds"][number]["attacker"],
+  ): string => {
+    const dialogue = dialogues[index];
+    if (!dialogue?.publicUrl) {
+      throw new Error(
+        `Missing dialogue URL for ${attacker} at dialogue index ${index}`,
+      );
     }
+    return dialogue.publicUrl;
   };
 
   const character = {
@@ -65,8 +68,8 @@ export const prepareVideoProps = (manifest: ManifestType) => {
       : getImage(images.char2Images, "front");
 
     const dialogueAudio = isChar1Attacking
-      ? audio.char1Dialogues[char1AudioIndex++].publicUrl
-      : audio.char2Dialogues[char2AudioIndex++].publicUrl;
+      ? getDialogueUrl(audio.char1Dialogues, char1AudioIndex++, "character1")
+      : getDialogueUrl(audio.char2Dialogues, char2AudioIndex++, "character2");
 
     const dialogueText = round.dialogue;
 
@@ -109,24 +112,48 @@ export const prepareVideoProps = (manifest: ManifestType) => {
     };
   });
 
-  const audioDuration = async () => {
-    const announcerMeta = await getAudioDuration(common.announcerAudio);
-
-    const roundsMeta = await Promise.all(
-      rounds.map((round) => getAudioDuration(round.dialogueAudio)),
-    );
-
-    const allMeta = [announcerMeta, ...roundsMeta];
-    let totalDuration = 0;
-    allMeta.forEach((dur) => (totalDuration += dur));
-
-    return { announcerMeta, roundsMeta, totalDuration };
-  };
-
   return {
     character,
     common,
     rounds,
-    audioDuration,
+    audioDuration: {
+      announcerMeta: 0,
+      roundsMeta: rounds.map(() => 0),
+      totalDuration: 0,
+    },
   };
 };
+
+export type PrepareVideoPropsType = ReturnType<typeof prepareVideoProps>;
+
+// Uses Remotion's official media-parser to extract audio duration
+const getAudioDuration = async (src: string): Promise<number> => {
+  const result = await parseMedia({
+    src,
+    fields: {
+      durationInSeconds: true,
+    },
+  });
+
+  return result.durationInSeconds ?? 0;
+};
+
+// Calculate All Audio Clips
+export const audioDuration = async (
+  announcerAudio: string,
+  rounds: string[],
+) => {
+  const announcerMeta = await getAudioDuration(announcerAudio);
+
+  const roundsMeta = await Promise.all(
+    rounds.map((round) => getAudioDuration(round)),
+  );
+
+  const allMeta = [announcerMeta, ...roundsMeta];
+  let totalDuration = 0;
+  allMeta.forEach((dur) => (totalDuration += dur));
+
+  return { announcerMeta, roundsMeta, totalDuration };
+};
+
+export type AudioDurationType = typeof audioDuration;

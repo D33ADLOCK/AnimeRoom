@@ -19,7 +19,7 @@ export async function alphaTrim(
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const a = data[(y * width + x) * channels + 3];
-      if (a >= alphaThreshold) {
+      if ((a ?? 0) >= alphaThreshold) {
         if (x < minX) minX = x;
         if (y < minY) minY = y;
         if (x > maxX) maxX = x;

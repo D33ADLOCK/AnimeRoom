@@ -2,41 +2,41 @@ import { AbsoluteFill, Sequence } from "remotion";
 import Introduction from "./scenes/Introduction";
 import CharacterStats from "./scenes/CharacterStats";
 import BattleRound from "./scenes/BattleRound";
-import { dummyManifest } from "./dummyManifest";
-import { prepareVideoProps } from "./prepareVideoProps";
-import { useCallback } from "react";
+import type { PrepareVideoPropsType } from "./prepareVideoProps";
 // TODO: These will come from the manifest props once the full pipeline is wired up.
 // For now, using hardcoded R2 URLs as placeholders.
 
-const newVideoProp = prepareVideoProps(dummyManifest);
+export type MyCompositionProps = PrepareVideoPropsType;
 
-export const MyComposition = () => {
+export const MyComposition = (props: MyCompositionProps) => {
   // ── Common assets (will come from manifest.common) ──
-  const bgImage = newVideoProp.common.background;
-  const announcerIntro = newVideoProp.common.announcerImage;
-  const announcerAudio = newVideoProp.common.announcerAudio;
+  const bgImage = props.common.background;
+  const announcerIntro = props.common.announcerImage;
+  const announcerAudio = props.common.announcerAudio;
 
   // ── Per-battle character images — local public/ (will come from
-  const firstCharacterside = newVideoProp.character.character1.images.side;
-  const secondCharacterside = newVideoProp.character.character2.images.side;
+  const firstCharacterside = props.character.character1.images.side;
+  const secondCharacterside = props.character.character2.images.side;
 
   // Skills data
-  const firstCharacterSkills = newVideoProp.character.character1.details.skills;
-  const secondCharacterSkills =
-    newVideoProp.character.character2.details.skills;
+  const firstCharacterSkills = props.character.character1.details.skills;
+  const secondCharacterSkills = props.character.character2.details.skills;
 
   // Data references to keep JSX clean
-  const char1 = newVideoProp.character.character1.details;
-  const char2 = newVideoProp.character.character2.details;
-  const rounds = newVideoProp.rounds;
+  const char1 = props.character.character1.details;
+  const char2 = props.character.character2.details;
+  const rounds = props.rounds;
 
   // Timeline constants
-  const INTRO_END = 180;
-  const STATS_DURATION = 90;
-  const BATTLE_DURATION = 300;
-  const CHIP_FRAME = 210;
+  const INTRO_END = Math.max(
+    1,
+    Math.ceil(props.audioDuration.announcerMeta * 30),
+  );
 
-  const statsEnd = INTRO_END + STATS_DURATION * 2; // 360
+  const STATS_DURATION = 90;
+  const CHIP_FRAME = 210; // TODO: Needs to be dynamic based on when they actually speak
+
+  const statsEnd = INTRO_END + STATS_DURATION * 2;
 
   return (
     <AbsoluteFill
@@ -85,14 +85,26 @@ export const MyComposition = () => {
 
       {/* ─── Dynamic Battle Rounds ─── */}
       {rounds.map((round, index) => {
-        // Calculate the start time for this specific round based on its index
-        const sequenceStart = statsEnd + BATTLE_DURATION * index;
+        // Find how many frames THIS specific audio round takes (duration in sec * 30 fps)
+        const roundDurationFrames = Math.max(
+          1,
+          Math.ceil(props.audioDuration.roundsMeta[index] * 30),
+        );
+
+        // Calculate the exact start frame by adding up all previous round durations
+        let sequenceStart = statsEnd;
+        for (let i = 0; i < index; i++) {
+          sequenceStart += Math.max(
+            1,
+            Math.ceil(props.audioDuration.roundsMeta[i] * 30),
+          );
+        }
 
         return (
           <Sequence
             key={`round-${index}`}
             from={sequenceStart}
-            durationInFrames={BATTLE_DURATION}
+            durationInFrames={roundDurationFrames}
           >
             <BattleRound
               background={bgImage}
@@ -102,7 +114,7 @@ export const MyComposition = () => {
               name={round.opponentName}
               chipfrom={round.startingHealth}
               percentage={round.endingHealth}
-              chipStartFrame={CHIP_FRAME}
+              chipStartFrame={roundDurationFrames - 30}
               side={round.attackerName === char1.name ? "right" : "left"} // Attacker is on the opposite side
             />
           </Sequence>
