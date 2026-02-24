@@ -1,4 +1,5 @@
 import path from "path";
+import type { Readable } from "node:stream";
 import type { ImagePrompts } from "./types";
 import { saveStreamToR2 } from "../storage/upload";
 import { getTempUrl } from "../storage/r2";
@@ -11,12 +12,22 @@ async function withRetry<T>(
   maxAttempts = 4,
   baseDelayMs = 2000,
 ): Promise<T> {
+  const isRateLimitError = (error: unknown): boolean => {
+    if (typeof error !== "object" || error === null) {
+      return false;
+    }
+    const maybeErr = error as {
+      response?: { status?: number };
+      statusCode?: number;
+    };
+    return maybeErr.response?.status === 429 || maybeErr.statusCode === 429;
+  };
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn();
-    } catch (err: any) {
-      const isRateLimited =
-        err?.response?.status === 429 || err?.statusCode === 429;
+    } catch (err: unknown) {
+      const isRateLimited = isRateLimitError(err);
       const isLastAttempt = attempt === maxAttempts;
 
       if (!isRateLimited || isLastAttempt) throw err;
@@ -39,7 +50,7 @@ export const generateCharacterImages = async (
   const referenceImageUrl = await getTempUrl();
 
   const saveImageToR2 = async (
-    stream: ReadableStream<Uint8Array> | NodeJS.ReadableStream,
+    stream: ReadableStream<Uint8Array> | Readable,
     angle: string,
   ) => {
     const fileName = `${name}-${angle}.png`;

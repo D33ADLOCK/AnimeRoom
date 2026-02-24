@@ -5,7 +5,7 @@ import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
 import type { ReadableStream as NodeWebReadableStream } from "node:stream/web";
 
 export async function saveStreamToR2(
-  stream: ReadableStream<Uint8Array> | NodeJS.ReadableStream,
+  stream: ReadableStream<Uint8Array> | Readable,
   filePath: string,
 ) {
   const bucketName = process.env.R2_BUCKET_NAME!;
@@ -21,14 +21,16 @@ export async function saveStreamToR2(
   };
 
   const isWebStream = (
-    s: ReadableStream<Uint8Array> | NodeJS.ReadableStream,
+    s: ReadableStream<Uint8Array> | Readable,
   ): s is ReadableStream<Uint8Array> => {
     return typeof (s as ReadableStream<Uint8Array>).getReader === "function";
   };
 
   const body: NonNullable<PutObjectCommandInput["Body"]> = isWebStream(stream)
-    ? Readable.fromWeb(stream as unknown as NodeWebReadableStream)
-    : stream;
+    ? (Readable.fromWeb(
+        stream as unknown as NodeWebReadableStream,
+      ) as NonNullable<PutObjectCommandInput["Body"]>)
+    : (stream as NonNullable<PutObjectCommandInput["Body"]>);
 
   const upload = new Upload({
     client: s3,

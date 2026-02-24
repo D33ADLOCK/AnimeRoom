@@ -1,0 +1,124 @@
+{
+  "character1": {
+    "name": "Gogeta",
+    "title": "Fusion Flop King",
+    "stats": [
+      {
+        "label": "Delusional",
+        "value": 95,
+        "color": "#FF3D00"
+      },
+      {
+        "label": "MC Syndrome",
+        "value": 90,
+        "color": "#FFD700"
+      },
+      {
+        "label": "Trash Talk Accuracy",
+        "value": 70,
+        "color": "#38BDF8"
+      },
+      {
+        "label": "Ego-to-Skill Ratio",
+        "value": 85,
+        "color": "#FF69B4"
+      },
+      {
+        "label": "Foot-in-Mouth Rate",
+        "value": 60,
+        "color": "#32CD32"
+      }
+    ],
+    "skills": [
+      {
+        "name": "KamehamePose",
+        "letter": "K",
+        "color": "#4169E1",
+        "desc": "Strikes dramatic pose mid-beam."
+      },
+      {
+        "name": "Fusion Timeout",
+        "letter": "F",
+        "color": "#FF4500",
+        "desc": "30-min fusion clock ticks."
+      }
+    ]
+  },
+  "character2": {
+    "name": "Vegito",
+    "title": "Eternal Potara Poser",
+    "stats": [
+      {
+        "label": "Delusional",
+        "value": 92,
+        "color": "#FF3D00"
+      },
+      {
+        "label": "MC Syndrome",
+        "value": 88,
+        "color": "#FFD700"
+      },
+      {
+        "label": "Trash Talk Accuracy",
+        "value": 82,
+        "color": "#38BDF8"
+      },
+      {
+        "label": "Ego-to-Skill Ratio",
+        "value": 78,
+        "color": "#FF69B4"
+      },
+      {
+        "label": "Foot-in-Mouth Rate",
+        "value": 55,
+        "color": "#32CD32"
+      }
+    ],
+    "skills": [
+      {
+        "name": "Potara Permanence",
+        "letter": "P",
+        "color": "#FF1493",
+        "desc": "Stuck fused forever, oops."
+      },
+      {
+        "name": "Candy Beam",
+        "letter": "C",
+        "color": "#FF6347",
+        "desc": "Turns foes into snacks."
+      }
+    ]
+  },
+  "rounds": [
+    {
+      "attacker": "character1",
+      "dialogue": "Vegito, your Potara's permanent? No divorce for that ego trip!",
+      "damage": 25
+    },
+    {
+      "attacker": "character2",
+      "dialogue": "Gogeta, fusion dancer? More like timeout toddler!",
+      "damage": 28
+    },
+    {
+      "attacker": "character1",
+      "dialogue": "Potara candy? You're the sweetest failure in DBZ!",
+      "damage": 30
+    },
+    {
+      "attacker": "character2",
+      "dialogue": "Strike a pose, Gogeta? Clock's ticking, fuse over!",
+      "damage": 27
+    },
+    {
+      "attacker": "character1",
+      "dialogue": "Eternal fusion? Goku's nightmare, Vegeta's hell!",
+      "damage": 26
+    },
+    {
+      "attacker": "character2",
+      "dialogue": "Delusional dancer, your MC arc ended at 30 minutes!",
+      "damage": 24
+    }
+  ]
+}

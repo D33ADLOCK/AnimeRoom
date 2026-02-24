@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ADD COLUMN "video_props" jsonb;

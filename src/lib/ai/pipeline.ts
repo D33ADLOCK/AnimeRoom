@@ -116,6 +116,11 @@ export const runPipeline = async (
     background: `${R2_BASE}/common/images/background.png`,
     announcerImage: `${R2_BASE}/common/images/announcer-image.png`,
     announcerAudio: pickRandom(ANNOUNCER_AUDIO_POOL),
+    skillIcons: [
+      `${R2_BASE}/common/images/skill1.png`,
+      `${R2_BASE}/common/images/skill2.png`,
+      `${R2_BASE}/common/images/skill3.png`,
+    ],
   };
 
   const manifest = {
@@ -131,3 +136,5 @@ export const runPipeline = async (
 
   return manifest;
 };
+
+export type ManifestType = Awaited<ReturnType<typeof runPipeline>>;
