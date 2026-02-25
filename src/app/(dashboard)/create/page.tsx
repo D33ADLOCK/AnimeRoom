@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
 
 export default function CreatePage() {
   const userPromptSchema = z.object({
@@ -16,6 +17,8 @@ export default function CreatePage() {
   type formType = z.infer<typeof userPromptSchema>;
 
   const { mutateAsync } = api.job.createJob.useMutation();
+
+  const router = useRouter();
 
   const {
     handleSubmit,
@@ -32,11 +35,13 @@ export default function CreatePage() {
   const userPrompt = watch("prompt");
 
   const onSubmit = async (values: formType) => {
-    console.log("OnSubmut Called");
-    const jobId = await mutateAsync({ prompt: values.prompt });
-    console.log("Created", jobId);
+    const [result] = await mutateAsync({ prompt: values.prompt });
 
-    return jobId;
+    if (!result) throw new Error("Job Creating failed");
+
+    router.push(`/video/${result.jobId}`);
+
+    return result.jobId;
   };
 
   return (

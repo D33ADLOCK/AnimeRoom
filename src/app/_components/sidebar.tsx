@@ -1,5 +1,6 @@
 "use client";
 
+import { SignedIn, UserButton } from "@clerk/nextjs";
 import {
   ChevronDown,
   CreditCard,
@@ -72,7 +73,7 @@ function AppSidebar() {
   const isVideosActive = pathName.startsWith("/videos");
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar" className="border-r-0">
+    <Sidebar collapsible="offcanvas" variant="sidebar" className="border-r-0">
       {/* ─── Header ─── */}
       <SidebarHeader className="h-16 border-b border-gray-300 px-4 py-4">
         <div className="flex items-center justify-between">
@@ -209,15 +210,19 @@ function AppSidebar() {
       {/* ─── Footer ─── */}
       <SidebarFooter className="border-border/50 border-t px-3 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 ring-2 ring-purple-400">
-            <User2 className="h-5 w-5 text-purple-600" />
-          </div>
-          <div className="group-data-[collapsible=icon]:hidden">
-            <p className="text-sm leading-tight font-semibold">Rishabh Singh</p>
-            <p className="flex items-center gap-1 text-xs text-purple-500">
-              <Sparkles className="h-3 w-3" /> Upgrade
-            </p>
-          </div>
+          <SignedIn>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 ring-2 ring-purple-400">
+              <UserButton />
+            </div>
+            <div className="group-data-[collapsible=icon]:hidden">
+              <p className="text-sm leading-tight font-semibold">
+                Rishabh Singh
+              </p>
+              <p className="flex items-center gap-1 text-xs text-purple-500">
+                <Sparkles className="h-3 w-3" /> Upgrade
+              </p>
+            </div>
+          </SignedIn>
         </div>
       </SidebarFooter>
     </Sidebar>

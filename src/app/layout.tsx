@@ -6,9 +6,6 @@ import { Geist } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TRPCReactProvider } from "~/trpc/react";
 
-import AppSidebar from "./_components/sidebar";
-import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
-
 export const metadata: Metadata = {
   title: "Anime Room",
   description:
@@ -28,18 +25,7 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable}`}>
       <body>
         <ClerkProvider>
-          <TRPCReactProvider>
-            <SidebarProvider defaultOpen={true}>
-              <AppSidebar />
-              <main className="flex-1 overflow-auto">
-                <div className="flex h-18 items-center gap-2 border-b px-4">
-                  <SidebarTrigger size={"lg"} />
-                  {/* put page title / search / etc here */}
-                </div>
-                <div className="p-4">{children}</div>
-              </main>
-            </SidebarProvider>
-          </TRPCReactProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
         </ClerkProvider>
       </body>
     </html>

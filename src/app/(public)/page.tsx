@@ -2,7 +2,7 @@ import { dummyManifest } from "~/remotion/dummyManifest";
 import { prepareVideoProps } from "~/lib/video/prepareVideoProps";
 import { PreviewPlayer } from "../_components/previewPlayer";
 
-export default async function Page() {
+export default async function Home() {
   const STATS_DURATOION = 90; // Per round
 
   const defaultVideoProps = await prepareVideoProps(dummyManifest);
