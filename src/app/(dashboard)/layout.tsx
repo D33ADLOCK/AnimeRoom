@@ -9,13 +9,12 @@ export default function Layout({
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="flex h-16 items-center gap-2 px-8">
-          <SidebarTrigger size={"lg"} />
+      <main className="flex-1 overflow-auto bg-[var(--color-nb-bg)]">
+        <div className="flex h-16 items-center gap-2 border-b-[3px] border-[var(--color-nb-border)] px-8">
+          <SidebarTrigger size={"lg"} className="rounded-none font-bold" />
           <TopNavbar />
-          {/* put page title / search / etc here */}
         </div>
-        <div className="p-4">{children}</div>
+        <div className="p-6">{children}</div>
       </main>
     </SidebarProvider>
   );

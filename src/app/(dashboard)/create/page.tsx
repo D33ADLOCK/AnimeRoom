@@ -48,8 +48,10 @@ export default function CreatePage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Create a Video</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
+        <h1 className="text-3xl font-extrabold tracking-tight uppercase">
+          Create a Video
+        </h1>
+        <p className="mt-2 text-sm font-semibold text-[var(--color-nb-text)]/70">
           Describe your anime roast battle and we&apos;ll generate it for you.
         </p>
       </div>
@@ -60,9 +62,14 @@ export default function CreatePage() {
           <Textarea
             placeholder="e.g. Goku vs Vegeta in a roast battle. Goku is cocky and keeps flexing his Ultra Instinct. Vegeta is furious and roasts Goku's parenting skills..."
             {...register("prompt")}
-            className="border-border/60 bg-muted/30 placeholder:text-muted-foreground/50 min-h-[200px] resize-none rounded-xl px-4 py-4 text-base leading-relaxed focus-visible:ring-purple-500"
+            className="nb-input min-h-[200px] resize-none rounded-none border-[3px] border-[var(--color-nb-border)] bg-white px-4 py-4 text-base leading-relaxed font-semibold shadow-[3px_3px_0px_var(--color-nb-shadow)] placeholder:font-normal placeholder:text-[var(--color-nb-text)]/40 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[1px_1px_0px_var(--color-nb-shadow)] focus-visible:ring-0"
           />
-          <p className="text-muted-foreground text-right text-xs">
+          {errors.prompt && (
+            <p className="text-sm font-bold text-red-600">
+              {errors.prompt.message}
+            </p>
+          )}
+          <p className="text-right text-xs font-bold text-[var(--color-nb-text)]/50">
             {userPrompt.length} characters
           </p>
         </div>
@@ -70,9 +77,8 @@ export default function CreatePage() {
         {/* Generate Button */}
         <Button
           type={"submit"}
-          // disabled={!prompt.trim()}
           size="lg"
-          className="w-full rounded-xl bg-purple-600 py-6 text-base font-semibold hover:bg-purple-700 disabled:opacity-50"
+          className="nb-btn w-full cursor-pointer rounded-none border-[3px] border-[var(--color-nb-border)] bg-[var(--color-nb-pink)] py-6 text-base font-extrabold tracking-wider text-[var(--color-nb-text)] uppercase shadow-[4px_4px_0px_var(--color-nb-shadow)] hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[var(--color-nb-pink)] hover:shadow-[2px_2px_0px_var(--color-nb-shadow)] disabled:opacity-50"
         >
           {isSubmitting ? (
             <>

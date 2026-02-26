@@ -1,6 +1,84 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* ─── Neo Brutalism Color Palette ─── */
+  --color-nb-bg: #fffbeb;
+  --color-nb-yellow: #facc15;
+  --color-nb-pink: #f472b6;
+  --color-nb-lavender: #c4b5fd;
+  --color-nb-mint: #6ee7b7;
+  --color-nb-orange: #fb923c;
+  --color-nb-blue: #60a5fa;
+  --color-nb-border: #1a1a1a;
+  --color-nb-shadow: #1a1a1a;
+  --color-nb-text: #1a1a1a;
+  --color-nb-white: #ffffff;
+}
+
+/* ─── Neo Brutalism Base Styles ─── */
+
+body {
+  background-color: var(--color-nb-bg);
+  color: var(--color-nb-text);
+  font-weight: 500;
+}
+
+/* ─── Neo Brutal Utility Classes ─── */
+
+.nb-border {
+  border: 3px solid var(--color-nb-border);
+}
+
+.nb-shadow {
+  box-shadow: 4px 4px 0px var(--color-nb-shadow);
+}
+
+.nb-shadow-lg {
+  box-shadow: 6px 6px 0px var(--color-nb-shadow);
+}
+
+.nb-shadow-sm {
+  box-shadow: 2px 2px 0px var(--color-nb-shadow);
+}
+
+.nb-btn {
+  border: 3px solid var(--color-nb-border);
+  box-shadow: 4px 4px 0px var(--color-nb-shadow);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.1s ease;
+}
+
+.nb-btn:hover {
+  box-shadow: 2px 2px 0px var(--color-nb-shadow);
+  transform: translate(2px, 2px);
+}
+
+.nb-btn:active {
+  box-shadow: 0px 0px 0px var(--color-nb-shadow);
+  transform: translate(4px, 4px);
+}
+
+.nb-card {
+  border: 3px solid var(--color-nb-border);
+  box-shadow: 6px 6px 0px var(--color-nb-shadow);
+  background: var(--color-nb-white);
+}
+
+.nb-input {
+  border: 3px solid var(--color-nb-border);
+  box-shadow: 3px 3px 0px var(--color-nb-shadow);
+  background: var(--color-nb-white);
+  font-weight: 600;
+}
+
+.nb-input:focus {
+  box-shadow: 1px 1px 0px var(--color-nb-shadow);
+  transform: translate(2px, 2px);
+  outline: none;
 }
