@@ -15,8 +15,8 @@ export const MyComposition = (props: MyCompositionProps) => {
   const announcerAudio = props.common.announcerAudio;
 
   // ── Per-battle character images — local public/ (will come from
-  const firstCharacterside = props.character.character1.images.side;
-  const secondCharacterside = props.character.character2.images.side;
+  const firstCharacterside = props.character.character1.angles.side.image;
+  const secondCharacterside = props.character.character2.angles.side.image;
 
   // Skills data
   const firstCharacterSkills = props.character.character1.details.skills;

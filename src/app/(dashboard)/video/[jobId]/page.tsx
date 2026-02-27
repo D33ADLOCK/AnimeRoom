@@ -1,6 +1,7 @@
 "use client";
 
 import { PreviewPlayer } from "~/app/_components/previewPlayer";
+import { VideoAssetsEditor } from "~/app/(dashboard)/sampleVideos/videoAssetsEditor";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -106,11 +107,19 @@ export default function Page() {
   );
 
   return (
-    <div>
-      <PreviewPlayer
-        playerProps={manifest.videoProps}
-        totalDuration={totalDurationInFrames}
-      />
+    <div className="flex gap-4 px-8">
+      {/* Editor Area */}
+      <VideoAssetsEditor videoProps={manifest.videoProps} jobId={jobId} />
+
+      {/* Preview Player - sticky on the right */}
+      <div className="top-4 h-fit w-1/3 shrink">
+        <div className="border-[3px] border-[var(--color-nb-border)] bg-white p-2 shadow-[6px_6px_0px_var(--color-nb-shadow)]">
+          <PreviewPlayer
+            playerProps={manifest.videoProps}
+            totalDuration={totalDurationInFrames}
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ interface RoundCardProps {
   dialogue: string;
   damage: number;
   imageUrl: string;
+  onClick?: () => void;
 }
 
 export function RoundCard({
@@ -13,9 +14,13 @@ export function RoundCard({
   dialogue,
   damage,
   imageUrl,
+  onClick,
 }: RoundCardProps) {
   return (
-    <div className="flex items-start gap-3 border-[3px] border-[var(--color-nb-border)] bg-white p-3 shadow-[4px_4px_0px_var(--color-nb-shadow)]">
+    <div
+      onClick={onClick}
+      className="flex cursor-pointer items-start gap-3 border-[3px] border-[var(--color-nb-border)] bg-white p-3 shadow-[4px_4px_0px_var(--color-nb-shadow)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_var(--color-nb-shadow)]"
+    >
       {/* Square Avatar */}
       <div className="relative h-16 w-16 shrink-0 overflow-hidden border-[3px] border-[var(--color-nb-border)] bg-gray-100">
         <Image

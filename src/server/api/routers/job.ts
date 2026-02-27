@@ -1,11 +1,19 @@
 import z from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { randomUUID } from "crypto";
 import { generateScript } from "~/lib/ai/grok";
 import { jobsTable } from "~/server/db/schema";
 import { runPipeline } from "~/lib/ai/pipeline";
-import { eq } from "drizzle-orm";
-import { prepareVideoProps } from "~/lib/video/prepareVideoProps";
+import { and, eq } from "drizzle-orm";
+import {
+  prepareVideoProps,
+  type PrepareVideoPropsType,
+} from "~/lib/video/prepareVideoProps";
+import { generateAndSaveAudio } from "~/lib/ai/audio";
+import { getTempUrl } from "~/lib/storage/r2";
+import { genImage } from "~/lib/ai/replicate";
+import { saveStreamToR2 } from "~/lib/storage/upload";
+import path from "path";
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
@@ -130,5 +138,85 @@ export const jobRouter = createTRPCRouter({
       if (!vp) throw new Error("Transformation failed");
 
       return videoProps;
+    }),
+
+  regenerateAudio: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        dialogue: z.string(),
+        voiceId: z.string(),
+        name: z.string(),
+        index: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.db.query.jobsTable.findFirst({
+        where: (t, { eq, and }) =>
+          and(eq(t.id, input.jobId), eq(t.userId, ctx.userId)),
+        columns: { id: true },
+      });
+
+      if (!result) throw new Error("Unauthorised user");
+
+      const audio = await generateAndSaveAudio(
+        input.index,
+        input.name,
+        input.voiceId,
+        input.dialogue,
+        input.jobId,
+      );
+
+      if (!audio) throw new Error("Failed to Generate Audio");
+
+      return audio;
+    }),
+
+  regenerateImage: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        prompt: z.string(),
+        name: z.string(),
+        angle: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.db.query.jobsTable.findFirst({
+        where: (t, { eq, and }) =>
+          and(eq(t.id, input.jobId), eq(t.userId, ctx.userId)),
+        columns: { id: true },
+      });
+
+      if (!result) throw new Error("Unauthorised request");
+
+      const referenceImageUrl = await getTempUrl();
+
+      const imageStream = await genImage(input.prompt, referenceImageUrl);
+
+      const fileName = `${input.name}-${input.angle}.png`;
+      const r2Key = path.posix.join(input.jobId, "images", fileName);
+
+      const imageUrl = await saveStreamToR2(imageStream, r2Key);
+
+      return { imageUrl, fileName };
+    }),
+
+  saveVideoPropToDb: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        videoProp: z.unknown(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(jobsTable)
+        .set({ videoProps: input.videoProp as PrepareVideoPropsType })
+        .where(
+          and(eq(jobsTable.id, input.jobId), eq(jobsTable.userId, ctx.userId)),
+        );
+
+      return { status: "ok" };
     }),
 });

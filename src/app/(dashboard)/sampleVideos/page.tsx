@@ -17,7 +17,7 @@ export default async function Page() {
   return (
     <div className="flex gap-4 px-8">
       {/* Editor Area */}
-      <VideoAssetsEditor videoProps={videoProps} />
+      <VideoAssetsEditor videoProps={videoProps} jobId={dummyManifest.jobId} />
 
       {/* Preview Player - sticky on the right */}
       <div className="top-4 h-fit w-1/2 w-1/3 shrink">

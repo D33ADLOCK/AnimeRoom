@@ -38,6 +38,19 @@ export const prepareVideoProps = async (manifest: ManifestType) => {
     return image.publicUrl;
   };
 
+  const getImagePrompt = (
+    imagePrompt: ManifestType["script"]["imagePrompts"][
+      | "character1"
+      | "character2"],
+    angle: string,
+  ): string => {
+    const image = imagePrompt.find((entry) => angle === entry.angle);
+    if (!image?.prompt) {
+      throw new Error(`Missing image URL for angle: ${angle}`);
+    }
+    return image.prompt;
+  };
+
   const getDialogueUrl = (
     dialogues: ManifestType["audio"]["char1Dialogues"],
     index: number,
@@ -55,18 +68,36 @@ export const prepareVideoProps = async (manifest: ManifestType) => {
   const character = {
     character1: {
       details: script.character1,
-      images: {
-        front: getImage(images.char1Images, "front"),
-        side: getImage(images.char1Images, "side"),
-        profile: getImage(images.char1Images, "profile"),
+      angles: {
+        front: {
+          image: getImage(images.char1Images, "front"),
+          prompt: getImagePrompt(script.imagePrompts.character1, "front"),
+        },
+        side: {
+          image: getImage(images.char1Images, "side"),
+          prompt: getImagePrompt(script.imagePrompts.character1, "side"),
+        },
+        profile: {
+          image: getImage(images.char1Images, "profile"),
+          prompt: getImagePrompt(script.imagePrompts.character1, "profile"),
+        },
       },
     },
     character2: {
       details: script.character2,
-      images: {
-        front: getImage(images.char2Images, "front"),
-        side: getImage(images.char2Images, "side"),
-        profile: getImage(images.char2Images, "profile"),
+      angles: {
+        front: {
+          image: getImage(images.char2Images, "front"),
+          prompt: getImagePrompt(script.imagePrompts.character2, "front"),
+        },
+        side: {
+          image: getImage(images.char2Images, "side"),
+          prompt: getImagePrompt(script.imagePrompts.character2, "side"),
+        },
+        profile: {
+          image: getImage(images.char2Images, "profile"),
+          prompt: getImagePrompt(script.imagePrompts.character2, "profile"),
+        },
       },
     },
   };
@@ -120,6 +151,7 @@ export const prepareVideoProps = async (manifest: ManifestType) => {
       : getImage(images.char1Images, "profile");
 
     return {
+      attackingCharacter: round.attacker,
       attackerName,
       attackerImage,
       dialogueAudio,

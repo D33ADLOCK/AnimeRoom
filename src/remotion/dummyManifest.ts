@@ -94,34 +94,34 @@ export const dummyManifest = {
     imagePrompts: {
       character1: [
         {
-          angle: "front",
+          angle: "front" as const,
           prompt:
-            "Chibi Sukuna with four arms and tattoos, full-body front-facing hero shot looking at camera with savage grin and tiny fists up, adorable menacing eyes, strictly match the art style of the reference image",
+            "Chibi Sukuna with pink hair and markings, full-body front-facing hero shot looking at camera with an evil smirk and arms crossed, tiny and cute but sinister, purely anime style, no background, strictly match the art style of the reference image",
         },
         {
-          angle: "side",
+          angle: "side" as const,
           prompt:
-            "Chibi Sukuna slight right 3/4 view, 3/4 body shot with cocky pose and one arm flexed, cute evil smirk, strictly match the art style of the reference image",
+            "Chibi Sukuna slight right 3/4 view, 3/4 body shot pointing mockingly forward, tiny and cute but sinister, purely anime style, no background, strictly match the art style of the reference image",
         },
         {
-          angle: "profile",
+          angle: "profile" as const,
           prompt:
-            "Chibi Sukuna right profile close-up headshot, sharp features and tattoos, playful fierce expression, strictly match the art style of the reference image",
+            "Chibi Sukuna right profile close-up headshot, arrogant laughing expression with eyes closed, tiny and cute but sinister, purely anime style, no background, strictly match the art style of the reference image",
         },
       ],
       character2: [
         {
-          angle: "front",
+          angle: "front" as const,
           prompt:
             "Chibi Sakura with pink hair and headband, full-body front-facing hero shot looking at camera with determined pout and tiny fists clenched, big sparkly eyes, strictly match the art style of the reference image",
         },
         {
-          angle: "side",
+          angle: "side" as const,
           prompt:
             "Chibi Sakura slight left 3/4 view, 3/4 body shot with punching stance, adorable angry blush, strictly match the art style of the reference image",
         },
         {
-          angle: "profile",
+          angle: "profile" as const,
           prompt:
             "Chibi Sakura left profile close-up headshot, fierce side-eye expression with cute furrowed brows, strictly match the art style of the reference image",
         },

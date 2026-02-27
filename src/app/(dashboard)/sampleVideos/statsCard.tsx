@@ -2,33 +2,24 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
-import ImageEditorModal from "./imageEditorModal";
+import type { PrepareVideoPropsType } from "~/lib/video/prepareVideoProps";
 
 function AssetBox({
   imgSrc,
   imgAlt,
-  isModalOpen,
-  handleModelClick,
+  onClick,
 }: {
   imgSrc: string;
   imgAlt: "front" | "side" | "profile";
-  isModalOpen: boolean;
-  handleModelClick: () => void;
+  onClick: () => void;
 }) {
   return (
     <div className="flex flex-1 flex-col gap-2">
       {/* 9:16 Image Container */}
       <div
-        onClick={handleModelClick}
+        onClick={onClick}
         className="relative aspect-[9/16] w-full cursor-pointer overflow-hidden border-[3px] border-[var(--color-nb-border)] bg-gray-100 shadow-[2px_2px_0px_var(--color-nb-shadow)] transition-transform hover:-translate-y-1"
       >
-        {isModalOpen && (
-          <ImageEditorModal
-            initialCharacter={"character1"}
-            initialedAngle={imgAlt}
-          />
-        )}
-
         <Image src={imgSrc} alt={imgAlt} fill className="object-cover" />
       </div>
       {/* Label underneath */}
@@ -39,16 +30,21 @@ function AssetBox({
   );
 }
 
-type StatsCardProp = {
-  isModalOpen: boolean;
-  handleModelClick: () => void;
+type CharacterId = "character1" | "character2";
+type Angle = "front" | "side" | "profile";
+
+type StatsCardProps = {
+  characterId: CharacterId;
+  onOpenModal: (character: CharacterId, angle: Angle) => void;
+  character: PrepareVideoPropsType["character"][CharacterId];
 };
 
-export function StatsCard({ isModalOpen, handleModelClick }: StatsCardProp) {
-  console.log("isModalOpen: ", isModalOpen);
+export function StatsCard({
+  characterId,
+  onOpenModal,
+  character,
+}: StatsCardProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const profileImagePath =
-    "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/images/Sukuna-profile.png";
 
   return (
     <div className="flex h-min w-1/2 flex-col border-[3px] border-[var(--color-nb-border)] bg-white shadow-[6px_6px_0px_var(--color-nb-shadow)] transition-all">
@@ -57,7 +53,7 @@ export function StatsCard({ isModalOpen, handleModelClick }: StatsCardProp) {
         {/* Avatar */}
         <div className="relative h-16 w-16 shrink-0 overflow-hidden border-[3px] border-[var(--color-nb-border)] bg-white">
           <Image
-            src={profileImagePath}
+            src={character.angles.profile.image}
             className="object-cover"
             alt="profileImage"
             fill
@@ -67,9 +63,9 @@ export function StatsCard({ isModalOpen, handleModelClick }: StatsCardProp) {
         {/* Info */}
         <div className="flex flex-1 flex-col">
           <h1 className="text-xl font-extrabold tracking-tight uppercase">
-            Sukuna
+            {character.details.name}
           </h1>
-          <p className="text-sm font-semibold">King of Curses</p>
+          <p className="text-sm font-semibold">{character.details.title}</p>
         </div>
 
         {/* Toggle Icon */}
@@ -95,22 +91,19 @@ export function StatsCard({ isModalOpen, handleModelClick }: StatsCardProp) {
             </h3>
             <div className="flex gap-4">
               <AssetBox
-                imgSrc={profileImagePath}
+                imgSrc={character.angles.front.image}
                 imgAlt="front"
-                isModelOpen={isModalOpen}
-                handleModelClick={handleModelClick}
+                onClick={() => onOpenModal(characterId, "front")}
               />
               <AssetBox
-                imgSrc={profileImagePath}
-                isModelOpen={isModalOpen}
+                imgSrc={character.angles.side.image}
                 imgAlt="side"
-                handleModelClick={handleModelClick}
+                onClick={() => onOpenModal(characterId, "side")}
               />
               <AssetBox
-                imgSrc={profileImagePath}
-                isModelOpen={isModalOpen}
+                imgSrc={character.angles.profile.image}
                 imgAlt="profile"
-                handleModelClick={handleModelClick}
+                onClick={() => onOpenModal(characterId, "profile")}
               />
             </div>
           </div>
@@ -121,51 +114,23 @@ export function StatsCard({ isModalOpen, handleModelClick }: StatsCardProp) {
               Attributes
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              <div
-                className="flex items-center justify-between border-[3px] border-[var(--color-nb-border)] px-3 py-2 shadow-[2px_2px_0px_var(--color-nb-shadow)]"
-                style={{ backgroundColor: "#FF0000", color: "white" }}
-              >
-                <span className="truncate pr-2 text-xs font-bold uppercase">
-                  Ego Overload
-                </span>
-                <span className="font-extrabold">98</span>
-              </div>
-              <div
-                className="flex items-center justify-between border-[3px] border-[var(--color-nb-border)] px-3 py-2 shadow-[2px_2px_0px_var(--color-nb-shadow)]"
-                style={{ backgroundColor: "#FF4500", color: "white" }}
-              >
-                <span className="truncate pr-2 text-xs font-bold uppercase">
-                  Roast Immunity
-                </span>
-                <span className="font-extrabold">85</span>
-              </div>
-              <div
-                className="flex items-center justify-between border-[3px] border-[var(--color-nb-border)] px-3 py-2 shadow-[2px_2px_0px_var(--color-nb-shadow)]"
-                style={{ backgroundColor: "#DC143C", color: "white" }}
-              >
-                <span className="truncate pr-2 text-xs font-bold uppercase">
-                  Trash Talk Fury
-                </span>
-                <span className="font-extrabold">92</span>
-              </div>
-              <div
-                className="flex items-center justify-between border-[3px] border-[var(--color-nb-border)] px-3 py-2 shadow-[2px_2px_0px_var(--color-nb-shadow)]"
-                style={{ backgroundColor: "#8B0000", color: "white" }}
-              >
-                <span className="truncate pr-2 text-xs font-bold uppercase">
-                  Intimidation Flex
-                </span>
-                <span className="font-extrabold">95</span>
-              </div>
-              <div
-                className="col-span-2 flex items-center justify-between border-[3px] border-[var(--color-nb-border)] px-3 py-2 shadow-[2px_2px_0px_var(--color-nb-shadow)]"
-                style={{ backgroundColor: "#B22222", color: "white" }}
-              >
-                <span className="truncate pr-2 text-xs font-bold uppercase">
-                  Villain Swag
-                </span>
-                <span className="font-extrabold">88</span>
-              </div>
+              {character.details.stats.map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className={`flex items-center justify-between border-[3px] border-[var(--color-nb-border)] px-3 py-2 shadow-[2px_2px_0px_var(--color-nb-shadow)] ${
+                    i === character.details.stats.length - 1 &&
+                    character.details.stats.length % 2 !== 0
+                      ? "col-span-2"
+                      : ""
+                  }`}
+                  style={{ backgroundColor: stat.color, color: "white" }}
+                >
+                  <span className="truncate pr-2 text-xs font-bold uppercase">
+                    {stat.label}
+                  </span>
+                  <span className="font-extrabold">{stat.value}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
