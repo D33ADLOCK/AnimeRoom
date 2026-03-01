@@ -9,12 +9,23 @@ export const generateCharacterDialogues = async (
   voiceId: string,
   jobId: string,
 ) => {
-  const audioTasks = rounds.map(async (round, index) => {
+  const result = [];
+  let index = 0;
+  for (const round of rounds) {
     const { dialogue: text } = round;
-    return await generateAndSaveAudio(index, name, voiceId, text, jobId);
-  });
+    const roundAudio = await generateAndSaveAudio(
+      index,
+      name,
+      voiceId,
+      text,
+      jobId,
+    );
 
-  return Promise.all(audioTasks);
+    result.push(roundAudio);
+    index = index + 1;
+  }
+
+  return result;
 };
 
 export const generateAndSaveAudio = async (

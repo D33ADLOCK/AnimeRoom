@@ -39,7 +39,8 @@ export function VideoAssetsEditor({
 
   // TRPC Mutations
   const { mutateAsync: regenAudio } = api.job.regenerateAudio.useMutation();
-  const { mutateAsync: regenImage } = api.job.regenerateImage.useMutation();
+  const { mutateAsync: regenImage } =
+    api.job.regenerateAndSaveImage.useMutation();
   const { mutateAsync: saveToDb } = api.job.saveVideoPropToDb.useMutation();
 
   // Helper: save videoProp to DB (fire-and-forget, don't block UI)
@@ -69,28 +70,21 @@ export function VideoAssetsEditor({
   const handleImageRegen = async (prompt: string) => {
     const name = videoProp.character[selectedCharacter].details.name;
 
-    const image = await regenImage({
+    const results = await regenImage({
       jobId,
       prompt,
       name,
       angle: selectedAngle,
+      character: selectedCharacter,
+      videoProps: videoProp,
     });
 
-    const newImage = `${image.imageUrl}?v=${Date.now()}`;
+    const updatedProp = results.videoProp;
+    if (!updatedProp) throw new Error("Failed to get the videoProp from db");
 
-    const newProp = { ...videoProp };
+    setVideoProp(updatedProp);
 
-    const imageProp =
-      newProp.character[selectedCharacter].angles[selectedAngle];
-
-    imageProp.image = newImage;
-    imageProp.prompt = prompt;
-
-    setVideoProp(newProp);
-    persistToDb(newProp);
     toast.success("Image regenerated & saved");
-
-    return image;
   };
 
   const handleRegenAudio = async (text: string) => {

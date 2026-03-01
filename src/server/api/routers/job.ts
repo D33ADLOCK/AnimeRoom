@@ -11,9 +11,11 @@ import {
 } from "~/lib/video/prepareVideoProps";
 import { generateAndSaveAudio } from "~/lib/ai/audio";
 import { getTempUrl } from "~/lib/storage/r2";
-import { genImage } from "~/lib/ai/replicate";
+import { genImage } from "~/lib/ai/imageReplicate";
 import { saveStreamToR2 } from "~/lib/storage/upload";
 import path from "path";
+
+const VideoPropsInput: z.ZodType<PrepareVideoPropsType> = z.unknown();
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
@@ -172,13 +174,15 @@ export const jobRouter = createTRPCRouter({
       return audio;
     }),
 
-  regenerateImage: protectedProcedure
+  regenerateAndSaveImage: protectedProcedure
     .input(
       z.object({
         jobId: z.string(),
         prompt: z.string(),
         name: z.string(),
-        angle: z.string(),
+        angle: z.enum(["front", "side", "profile"]),
+        character: z.enum(["character1", "character2"]),
+        videoProps: VideoPropsInput,
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -199,7 +203,26 @@ export const jobRouter = createTRPCRouter({
 
       const imageUrl = await saveStreamToR2(imageStream, r2Key);
 
-      return { imageUrl, fileName };
+      const newImageUrl = `${imageUrl}?v=${Date.now()}`;
+
+      const imageProp =
+        input.videoProps.character[input.character].angles[input.angle];
+
+      imageProp.image = newImageUrl;
+
+      imageProp.prompt = input.prompt;
+
+      const [newVideoProp] = await ctx.db
+        .update(jobsTable)
+        .set({ videoProps: input.videoProps })
+        .where(
+          and(eq(jobsTable.id, input.jobId), eq(jobsTable.userId, ctx.userId)),
+        )
+        .returning({ videoProp: jobsTable.videoProps });
+
+      if (!newVideoProp) throw new Error("Failed to update in db");
+
+      return newVideoProp;
     }),
 
   saveVideoPropToDb: protectedProcedure
@@ -219,4 +242,17 @@ export const jobRouter = createTRPCRouter({
 
       return { status: "ok" };
     }),
+
+  getMyVideos: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.query.jobsTable.findMany({
+      where: (t, { eq, and }) =>
+        and(eq(t.userId, ctx.userId), eq(t.jobStatus, "complete")),
+      columns: {
+        id: true,
+        createdAt: true,
+        videoProps: true,
+      },
+      orderBy: (t, { desc }) => desc(t.createdAt),
+    });
+  }),
 });

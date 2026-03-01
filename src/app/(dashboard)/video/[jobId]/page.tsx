@@ -1,7 +1,7 @@
 "use client";
 
 import { PreviewPlayer } from "~/app/_components/previewPlayer";
-import { VideoAssetsEditor } from "~/app/(dashboard)/sampleVideos/videoAssetsEditor";
+import { VideoAssetsEditor } from "~/app/(dashboard)/video/_components/videoAssetsEditor";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";

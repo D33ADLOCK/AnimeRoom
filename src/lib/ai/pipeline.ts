@@ -1,5 +1,5 @@
 import { generateCharacterDialogues } from "./audio";
-import { generateCharacterImages } from "./images";
+import { processImagesWithRetry } from "./images";
 import type { RoastBattleSchemaType } from "../schemas/roast-battle";
 
 // ─── Common R2 Assets ────────────────────────────────────────────────────────
@@ -75,19 +75,39 @@ const generateAllImages = async (
   jobId: string,
 ) => {
   console.log("🖼  Generating all images...");
-  // Sequential per character to respect Replicate's rate limits
-  const char1Images = await generateCharacterImages(
-    script.character1.name,
-    script.imagePrompts.character1,
+
+  const allImageTasks = [
+    ...script.imagePrompts.character1.map((i) => ({
+      character: "character1" as const,
+      name: script.character1.name,
+      angle: i.angle,
+      prompt: i.prompt,
+    })),
+    ...script.imagePrompts.character2.map((i) => ({
+      character: "character2" as const,
+      name: script.character2.name,
+      angle: i.angle,
+      prompt: i.prompt,
+    })),
+  ];
+
+  const { finalResult, failed } = await processImagesWithRetry(
     jobId,
+    allImageTasks,
   );
-  const char2Images = await generateCharacterImages(
-    script.character2.name,
-    script.imagePrompts.character2,
-    jobId,
-  );
+
   console.log("✅ All images saved.\n");
-  return { char1Images, char2Images };
+
+  const char1Images = finalResult.filter((i) => i?.character === "character1");
+  const char2Images = finalResult.filter((i) => i?.character === "character2");
+
+  if (failed.length > 0) {
+    console.warn(
+      `⚠️  ${failed.length} image(s) failed after all retries and were replaced with placeholders.`,
+    );
+  }
+
+  return { char1Images, char2Images, failed };
 };
 
 // ─── Main Entry Point ────────────────────────────────────────────────────────
