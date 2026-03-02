@@ -1,4 +1,10 @@
-import { jsonb, pgTableCreator, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  jsonb,
+  pgTableCreator,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import type { ManifestType } from "~/remotion/dummyManifest";
 import type { PrepareVideoPropsType } from "~/lib/video/prepareVideoProps";
 
@@ -29,6 +35,25 @@ export const jobsTable = createTable("jobs", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .notNull()
+    .defaultNow()
+    .$onUpdateFn(() => new Date()),
+});
+
+export const assetType = ["image", "voice"] as const;
+
+export type AssetType = (typeof assetType)[number];
+
+export const usersAssetsTable = createTable("users_assets", {
+  id: bigint("id", { mode: "number" })
+    .generatedByDefaultAsIdentity()
+    .primaryKey(),
+  userId: text("user_id").notNull(),
+  characterName: text("character_name").notNull(),
+  assetType: text("asset_type").$type<AssetType>(),
+  r2Key: text(),
+  assetUrl: text("asset_url").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdateFn(() => new Date()),
 });

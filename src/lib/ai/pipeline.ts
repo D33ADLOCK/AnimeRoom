@@ -1,5 +1,6 @@
-import { generateCharacterDialogues } from "./audio";
+import { generateAudiosWithRetry } from "./audio";
 import { processImagesWithRetry } from "./images";
+import { getTempUrl } from "../storage/r2";
 import type { RoastBattleSchemaType } from "../schemas/roast-battle";
 
 // ─── Common R2 Assets ────────────────────────────────────────────────────────
@@ -19,55 +20,35 @@ const ANNOUNCER_AUDIO_POOL = [
 const pickRandom = <T>(arr: readonly T[]): T =>
   arr[Math.floor(Math.random() * arr.length)]!;
 
-// ─── Config ─────────────────────────────────────────────────────────────────
-
-const VOICE_IDS = {
-  character1: "yoZ06aMxZJJ28mfd3POQ",
-  character2: "VR6AewLTigWG4xSOukaG",
-};
-
 // ─── Orchestration ───────────────────────────────────────────────────────────
 
-type CharacterRoundType = {
-  character1: {
-    char1Name: string;
-    char1Rounds: {
-      attacker: "character1" | "character2";
-      dialogue: string;
-      damage: number;
-    }[];
-  };
-  character2: {
-    char2Name: string;
-    char2Rounds: {
-      attacker: "character1" | "character2";
-      dialogue: string;
-      damage: number;
-    }[];
-  };
-};
-
 const generateAllDialogues = async (
-  characterRounds: CharacterRoundType,
+  script: RoastBattleSchemaType,
   jobId: string,
 ) => {
   console.log("🎙  Generating all dialogues...");
-  const [char1Dialogues, char2Dialogues] = await Promise.all([
-    generateCharacterDialogues(
-      characterRounds.character1.char1Name,
-      characterRounds.character1.char1Rounds,
-      VOICE_IDS.character1,
-      jobId,
-    ),
-    generateCharacterDialogues(
-      characterRounds.character2.char2Name,
-      characterRounds.character2.char2Rounds,
-      VOICE_IDS.character2,
-      jobId,
-    ),
-  ]);
+
+  // Merge all rounds with character names for Chatterbox
+  const allRounds = script.rounds.map((r) => ({
+    ...r,
+    name:
+      r.attacker === "character1"
+        ? script.character1.name
+        : script.character2.name,
+  }));
+
+  // Get a reference audio URL for Chatterbox voice cloning
+  const referenceUrl =
+    "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/common/audio/announcer/testing-gogeta-d1.mp3";
+
+  const allAudios = await generateAudiosWithRetry(
+    allRounds,
+    referenceUrl,
+    jobId,
+  );
+
   console.log("✅ All dialogues saved.\n");
-  return { char1Dialogues, char2Dialogues };
+  return allAudios;
 };
 
 const generateAllImages = async (
@@ -98,8 +79,12 @@ const generateAllImages = async (
 
   console.log("✅ All images saved.\n");
 
-  const char1Images = finalResult.filter((i) => i?.character === "character1");
-  const char2Images = finalResult.filter((i) => i?.character === "character2");
+  const char1Images = finalResult.filter(
+    (i): i is NonNullable<typeof i> => i?.character === "character1",
+  );
+  const char2Images = finalResult.filter(
+    (i): i is NonNullable<typeof i> => i?.character === "character2",
+  );
 
   if (failed.length > 0) {
     console.warn(
@@ -116,19 +101,8 @@ export const runPipeline = async (
   script: RoastBattleSchemaType,
   jobId: string,
 ) => {
-  const char1Rounds = script.rounds.filter((r) => r.attacker === "character1");
-  const char2Rounds = script.rounds.filter((r) => r.attacker === "character2");
-
-  const char1Name = script.character1.name;
-  const char2Name = script.character2.name;
-
-  const characterRounds = {
-    character1: { char1Name, char1Rounds },
-    character2: { char2Name, char2Rounds },
-  };
-
   const [dialogues, images] = await Promise.all([
-    generateAllDialogues(characterRounds, jobId),
+    generateAllDialogues(script, jobId),
     generateAllImages(script, jobId),
   ]);
 

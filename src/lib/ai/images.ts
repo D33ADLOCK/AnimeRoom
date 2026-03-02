@@ -37,11 +37,11 @@ export type ImageTask = {
   prompt: string;
 };
 
-// Whatever processImage returns on success:
 export type ImageResult = {
   angle: string;
   fileName: string;
   publicUrl: string;
+  failed: boolean;
 };
 
 export type ImageResultWithCharacter = ImageResult & { character: Character };
@@ -88,6 +88,7 @@ export async function processImagesWithRetry(
         finalResult[task.index] = {
           ...r.value,
           character: task.character,
+          failed: false,
         };
       } else {
         console.error(
@@ -108,6 +109,7 @@ export async function processImagesWithRetry(
       fileName: `${task.name}-${task.angle}.png`,
       publicUrl: PLACEHOLDER_URL,
       character: task.character,
+      failed: true,
     };
   }
 

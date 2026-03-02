@@ -19,7 +19,6 @@ export const removeBg = async (imageUrl: URL) => {
   const url = file.url();
 
   const blob = await file.blob();
-
   const imageBuffer = Buffer.from(await blob.arrayBuffer());
 
   return { imageBuffer, url };

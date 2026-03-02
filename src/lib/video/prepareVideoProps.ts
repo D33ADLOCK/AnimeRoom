@@ -5,6 +5,7 @@ type CharacterImageType = {
   angle: string;
   fileName: string;
   publicUrl: string;
+  failed: boolean;
 }[];
 
 // Calculate All Audio Clips
@@ -25,7 +26,7 @@ export const allAudioDuration = async (
   return { announcerMeta, roundsMeta, totalDuration };
 };
 
-export type AudioDurationType = typeof audioDuration;
+export type AudioDurationType = typeof allAudioDuration;
 
 export const prepareVideoProps = async (manifest: ManifestType) => {
   const { images, audio, common, script } = manifest;
@@ -51,18 +52,20 @@ export const prepareVideoProps = async (manifest: ManifestType) => {
     return image.prompt;
   };
 
-  const getDialogueUrl = (
-    dialogues: ManifestType["audio"]["char1Dialogues"],
-    index: number,
-    attacker: ManifestType["script"]["rounds"][number]["attacker"],
-  ): string => {
-    const dialogue = dialogues[index];
-    if (!dialogue?.publicUrl) {
-      throw new Error(
-        `Missing dialogue URL for ${attacker} at dialogue index ${index}`,
-      );
+  const getImageFailed = (
+    charImage: CharacterImageType,
+    angle: string,
+  ): boolean => {
+    const image = charImage.find((entry) => angle === entry.angle);
+    return image?.failed ?? false;
+  };
+
+  const getDialogueUrl = (roundIndex: number): string => {
+    const audioEntry = audio[roundIndex];
+    if (!audioEntry?.publicUrl) {
+      throw new Error(`Missing dialogue URL for round index ${roundIndex}`);
     }
-    return dialogue.publicUrl;
+    return audioEntry.publicUrl;
   };
 
   const character = {
@@ -72,14 +75,17 @@ export const prepareVideoProps = async (manifest: ManifestType) => {
         front: {
           image: getImage(images.char1Images, "front"),
           prompt: getImagePrompt(script.imagePrompts.character1, "front"),
+          failed: getImageFailed(images.char1Images, "front"),
         },
         side: {
           image: getImage(images.char1Images, "side"),
           prompt: getImagePrompt(script.imagePrompts.character1, "side"),
+          failed: getImageFailed(images.char1Images, "side"),
         },
         profile: {
           image: getImage(images.char1Images, "profile"),
           prompt: getImagePrompt(script.imagePrompts.character1, "profile"),
+          failed: getImageFailed(images.char1Images, "profile"),
         },
       },
     },
@@ -89,25 +95,26 @@ export const prepareVideoProps = async (manifest: ManifestType) => {
         front: {
           image: getImage(images.char2Images, "front"),
           prompt: getImagePrompt(script.imagePrompts.character2, "front"),
+          failed: getImageFailed(images.char2Images, "front"),
         },
         side: {
           image: getImage(images.char2Images, "side"),
           prompt: getImagePrompt(script.imagePrompts.character2, "side"),
+          failed: getImageFailed(images.char2Images, "side"),
         },
         profile: {
           image: getImage(images.char2Images, "profile"),
           prompt: getImagePrompt(script.imagePrompts.character2, "profile"),
+          failed: getImageFailed(images.char2Images, "profile"),
         },
       },
     },
   };
-  let char1AudioIndex = 0;
-  let char2AudioIndex = 0;
 
   let char1Health = 100;
   let char2Health = 100;
 
-  const rounds = script.rounds.map((round) => {
+  const rounds = script.rounds.map((round, roundIndex) => {
     const isChar1Attacking = round.attacker === "character1";
 
     const attackerName = isChar1Attacking
@@ -118,9 +125,7 @@ export const prepareVideoProps = async (manifest: ManifestType) => {
       ? getImage(images.char1Images, "front")
       : getImage(images.char2Images, "front");
 
-    const dialogueAudio = isChar1Attacking
-      ? getDialogueUrl(audio.char1Dialogues, char1AudioIndex++, "character1")
-      : getDialogueUrl(audio.char2Dialogues, char2AudioIndex++, "character2");
+    const dialogueAudio = getDialogueUrl(roundIndex);
 
     const dialogueText = round.dialogue;
 
