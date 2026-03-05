@@ -1,6 +1,7 @@
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3 } from "./client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { UPLOAD_URL_EXPIRY } from "../constant";
 
 const BUCKET = process.env.R2_BUCKET_NAME!;
 
@@ -25,5 +26,6 @@ export async function getPreSignedUploadUrl(key: string) {
       Key: key,
       ContentType: getContentType(key),
     }),
+    { expiresIn: UPLOAD_URL_EXPIRY },
   );
 }

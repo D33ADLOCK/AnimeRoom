@@ -1,11 +1,13 @@
 import {
   bigint,
+  numeric,
   jsonb,
   pgTableCreator,
   text,
   timestamp,
+  index,
 } from "drizzle-orm/pg-core";
-import type { ManifestType } from "~/remotion/dummyManifest";
+import type { ManifestType } from "~/lib/ai/pipeline";
 import type { PrepareVideoPropsType } from "~/lib/video/prepareVideoProps";
 
 export const createTable = pgTableCreator((name) => `${name}`);
@@ -28,6 +30,7 @@ export const jobsTable = createTable("jobs", {
   prompt: text("prompt").notNull(),
   jobStatus: text("job_status").$type<JobStatusType>().notNull(),
   script: jsonb("script"),
+  assetReferences: jsonb("asset_references"),
   manifest: jsonb("manifest").$type<ManifestType>(),
   videoProps: jsonb("video_props").$type<PrepareVideoPropsType>(),
   videoUrl: text("video_url"),
@@ -39,6 +42,54 @@ export const jobsTable = createTable("jobs", {
     .$onUpdateFn(() => new Date()),
 });
 
+export const uploadSessionStatus = [
+  "intent_created",
+  "uploading",
+  "uploaded_unconfirmed",
+  "confirmed",
+  "attached",
+  "expired",
+  "failed",
+] as const;
+export type UploadSessionStatus = (typeof uploadSessionStatus)[number];
+
+export const uploadAssetType = ["voice_reference", "image_reference"] as const;
+export type UploadAssetType = (typeof uploadAssetType)[number];
+
+export const uploadCharacterSlot = ["character1", "character2"] as const;
+export type UploadCharacterSlot = (typeof uploadCharacterSlot)[number];
+
+export const uploadSessionsTable = createTable(
+  "upload_sessions",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    jobId: text("job_id"),
+    assetType: text("asset_type").$type<UploadAssetType>().notNull(),
+    characterSlot: text("character_slot").$type<UploadCharacterSlot>(),
+    status: text("status").$type<UploadSessionStatus>().notNull(),
+    r2Key: text("r2_key").notNull().unique(),
+    bucket: text("bucket").notNull(),
+    presignedUrlExpiresAt: timestamp("presigned_url_expires_at").notNull(),
+    expectedContentType: text("expected_content_type").notNull(),
+    expectedSizeBytes: bigint("expected_size_bytes", { mode: "number" }),
+    originalFilename: text("original_filename").notNull(),
+    error: text("error"),
+    confirmedAt: timestamp("confirmed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdateFn(() => new Date())
+      .notNull(),
+  },
+  (table) => {
+    return {
+      userIdIdx: index("upload_session_user_id_idx").on(table.userId),
+      jobIdIdx: index("upload_session_job_id_idx").on(table.jobId),
+    };
+  },
+);
+
 export const assetType = ["image", "voice"] as const;
 
 export type AssetType = (typeof assetType)[number];
@@ -49,9 +100,17 @@ export const usersAssetsTable = createTable("users_assets", {
     .primaryKey(),
   userId: text("user_id").notNull(),
   characterName: text("character_name").notNull(),
+
   assetType: text("asset_type").$type<AssetType>(),
   r2Key: text(),
   assetUrl: text("asset_url").notNull(),
+  sizeBytes: bigint("size_bytes", { mode: "number" }),
+  durationSeconds: numeric("duration_seconds"),
+  label: text("label"),
+  sourceUploadSessionId: bigint("source_upload_session_id", {
+    mode: "number",
+  }).references(() => uploadSessionsTable.id, { onDelete: "set null" }),
+
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

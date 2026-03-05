@@ -179,54 +179,50 @@ export const dummyManifest = {
       "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/common/images/skill3.png",
     ],
   },
-  audio: {
-    char1Dialogues: [
-      {
-        index: 0,
-        text: "Sakura, your punches hit like wet noodles—stick to playing nurse for real curses.",
-        fileName: "Sukuna-0.mp3",
-        publicUrl:
-          "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sukuna-0.mp3",
-      },
-      {
-        index: 1,
-        text: "Pink hair? More like cotton candy brain—zero threat, all fluff.",
-        fileName: "Sukuna-1.mp3",
-        publicUrl:
-          "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sukuna-1.mp3",
-      },
-      {
-        index: 2,
-        text: "Your 'strength' is cute, like a kitten swatting—back to team seven, scrub.",
-        fileName: "Sukuna-2.mp3",
-        publicUrl:
-          "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sukuna-2.mp3",
-      },
-    ],
-    char2Dialogues: [
-      {
-        index: 0,
-        text: "Sukuna, you're just a tattooed has-been cursed by your own ugly mug.",
-        fileName: "Sakura-0.mp3",
-        publicUrl:
-          "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sakura-0.mp3",
-      },
-      {
-        index: 1,
-        text: "Four arms and still can't handle one girl's savage smackdown, loser.",
-        fileName: "Sakura-1.mp3",
-        publicUrl:
-          "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sakura-1.mp3",
-      },
-      {
-        index: 2,
-        text: "King of curses? More like king of cringy failed roasts, begone.",
-        fileName: "Sakura-2.mp3",
-        publicUrl:
-          "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sakura-2.mp3",
-      },
-    ],
-  },
+  audio: [
+    {
+      index: 0,
+      text: "Sakura, your punches hit like wet noodles—stick to playing nurse for real curses.",
+      fileName: "Sukuna-0.mp3",
+      publicUrl:
+        "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sukuna-0.mp3",
+    },
+    {
+      index: 1,
+      text: "Sukuna, you're just a tattooed has-been cursed by your own ugly mug.",
+      fileName: "Sakura-0.mp3",
+      publicUrl:
+        "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sakura-0.mp3",
+    },
+    {
+      index: 2,
+      text: "Pink hair? More like cotton candy brain—zero threat, all fluff.",
+      fileName: "Sukuna-1.mp3",
+      publicUrl:
+        "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sukuna-1.mp3",
+    },
+    {
+      index: 3,
+      text: "Four arms and still can't handle one girl's savage smackdown, loser.",
+      fileName: "Sakura-1.mp3",
+      publicUrl:
+        "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sakura-1.mp3",
+    },
+    {
+      index: 4,
+      text: "Your 'strength' is cute, like a kitten swatting—back to team seven, scrub.",
+      fileName: "Sukuna-2.mp3",
+      publicUrl:
+        "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sukuna-2.mp3",
+    },
+    {
+      index: 5,
+      text: "King of curses? More like king of cringy failed roasts, begone.",
+      fileName: "Sakura-2.mp3",
+      publicUrl:
+        "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/6b4b6d37-9e58-492e-bc9a-491cf6b2f3c1/audio/Sakura-2.mp3",
+    },
+  ],
   images: {
     char1Images: [
       {

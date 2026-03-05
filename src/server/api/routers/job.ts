@@ -15,7 +15,7 @@ import { genImage } from "~/lib/ai/imageReplicate";
 import { saveStreamToR2 } from "~/lib/storage/upload";
 import path from "path";
 
-const VideoPropsInput: z.ZodType<PrepareVideoPropsType> = z.unknown();
+const VideoPropsInput: z.ZodType<PrepareVideoPropsType> = z.any();
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
@@ -201,7 +201,7 @@ export const jobRouter = createTRPCRouter({
       const fileName = `${input.name}-${input.angle}.png`;
       const r2Key = path.posix.join(input.jobId, "images", fileName);
 
-      const imageUrl = await saveStreamToR2(imageStream, r2Key);
+      const imageUrl = await saveStreamToR2(imageStream.file, r2Key);
 
       const newImageUrl = `${imageUrl}?v=${Date.now()}`;
 
