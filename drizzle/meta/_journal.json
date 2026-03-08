@@ -5,43 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1771063282707,
-      "tag": "0000_absent_madame_masque",
+      "when": 1772696255059,
+      "tag": "0000_productive_gunslinger",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1771063477671,
-      "tag": "0001_kind_mastermind",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1771481420620,
-      "tag": "0002_bumpy_jane_foster",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1771868542991,
-      "tag": "0003_long_makkari",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1771909577318,
-      "tag": "0004_youthful_blur",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1772646107351,
-      "tag": "0005_upload_and_assets",
+      "when": 1772819277479,
+      "tag": "0001_past_mikhail_rasputin",
       "breakpoints": true
     }
   ]

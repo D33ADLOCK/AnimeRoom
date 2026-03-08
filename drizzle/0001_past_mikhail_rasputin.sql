@@ -1,0 +1,1 @@
+ALTER TABLE "users_assets" DROP COLUMN "character_name";

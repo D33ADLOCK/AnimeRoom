@@ -1,9 +1,11 @@
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3 } from "./client";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { UPLOAD_URL_EXPIRY } from "../constant";
 
 const BUCKET = process.env.R2_BUCKET_NAME!;
+
+const READ_URL_EXPIRY = 60 * 60; // 1 hour in seconds
 
 const getContentType = (key: string) => {
   const k = key.toLowerCase();
@@ -27,5 +29,16 @@ export async function getPreSignedUploadUrl(key: string) {
       ContentType: getContentType(key),
     }),
     { expiresIn: UPLOAD_URL_EXPIRY },
+  );
+}
+
+export async function getPresignedReadUrl(key: string) {
+  return await getSignedUrl(
+    s3,
+    new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: key,
+    }),
+    { expiresIn: READ_URL_EXPIRY },
   );
 }

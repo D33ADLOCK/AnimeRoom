@@ -1,12 +1,14 @@
 import path from "path";
 import { genAudio } from "./chatterbox";
 import { saveBufferToR2 } from "../storage/saveBufferToR2";
+import { float32WavToPcm16 } from "../audio/float32ToPcm16";
 
 type AudioRound = {
   name: string;
   attacker: "character1" | "character2";
   dialogue: string;
   damage: number;
+  referenceUrl: string;
 };
 
 type AudioResult = {
@@ -21,7 +23,6 @@ type AudioResult = {
 
 export const generateAudiosWithRetry = async (
   rounds: AudioRound[],
-  referenceUrl: string,
   jobId: string,
 ) => {
   type PendingTask = AudioRound & { index: number };
@@ -45,7 +46,13 @@ export const generateAudiosWithRetry = async (
 
     const results = await Promise.allSettled(
       pending.map((r) =>
-        generateAndSaveAudio(r.index, r.name, referenceUrl, r.dialogue, jobId),
+        generateAndSaveAudio(
+          r.index,
+          r.name,
+          r.referenceUrl,
+          r.dialogue,
+          jobId,
+        ),
       ),
     );
 
@@ -83,11 +90,12 @@ export const generateAndSaveAudio = async (
   jobId: string,
 ) => {
   const audioOutput = await genAudio(text, referenceUrl);
+  const pcmBuffer = float32WavToPcm16(audioOutput.audioBuffer);
 
   const fileName = `${name}-${index}.wav`;
   const r2Key = path.posix.join(jobId, "audio", fileName);
 
-  const publicUrl = await saveBufferToR2(audioOutput.audioBuffer, r2Key);
+  const publicUrl = await saveBufferToR2(pcmBuffer, r2Key);
 
   console.log(`  ✅ Audio saved: ${fileName}`);
   return { index, text, fileName, publicUrl };

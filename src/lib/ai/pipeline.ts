@@ -20,32 +20,39 @@ const ANNOUNCER_AUDIO_POOL = [
 const pickRandom = <T>(arr: readonly T[]): T =>
   arr[Math.floor(Math.random() * arr.length)]!;
 
+// ─── References ──────────────────────────────────────────────────────────────
+
+export type PipelineReferences = {
+  character1?: { voiceUrl?: string; imageUrl?: string };
+  character2?: { voiceUrl?: string; imageUrl?: string };
+};
+
+const DEFAULT_VOICE_REF =
+  "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/common/audio/announcer/testing-gogeta-d1.mp3";
+
 // ─── Orchestration ───────────────────────────────────────────────────────────
 
 const generateAllDialogues = async (
   script: RoastBattleSchemaType,
   jobId: string,
+  references?: PipelineReferences,
 ) => {
   console.log("🎙  Generating all dialogues...");
 
-  // Merge all rounds with character names for Chatterbox
   const allRounds = script.rounds.map((r) => ({
     ...r,
     name:
       r.attacker === "character1"
         ? script.character1.name
         : script.character2.name,
+    // Per-character voice reference — falls back to default
+    referenceUrl:
+      r.attacker === "character1"
+        ? (references?.character1?.voiceUrl ?? DEFAULT_VOICE_REF)
+        : (references?.character2?.voiceUrl ?? DEFAULT_VOICE_REF),
   }));
 
-  // Get a reference audio URL for Chatterbox voice cloning
-  const referenceUrl =
-    "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/common/audio/announcer/testing-gogeta-d1.mp3";
-
-  const allAudios = await generateAudiosWithRetry(
-    allRounds,
-    referenceUrl,
-    jobId,
-  );
+  const allAudios = await generateAudiosWithRetry(allRounds, jobId);
 
   console.log("✅ All dialogues saved.\n");
   return allAudios;
@@ -100,9 +107,10 @@ const generateAllImages = async (
 export const runPipeline = async (
   script: RoastBattleSchemaType,
   jobId: string,
+  references?: PipelineReferences,
 ) => {
   const [dialogues, images] = await Promise.all([
-    generateAllDialogues(script, jobId),
+    generateAllDialogues(script, jobId, references),
     generateAllImages(script, jobId),
   ]);
 

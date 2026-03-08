@@ -14,15 +14,20 @@ export const createTable = pgTableCreator((name) => `${name}`);
 export const jobStatus = [
   "queued",
   "generating_script",
+  "script_generated",
   "generating_assets",
   "saving_manifest",
   "transforming_props",
-  "rendering",
   "complete",
   "failed",
 ] as const;
 
 export type JobStatusType = (typeof jobStatus)[number];
+
+export type AssetReferences = {
+  character1?: { voiceAssetId?: string | null; imageAssetId?: string | null };
+  character2?: { voiceAssetId?: string | null; imageAssetId?: string | null };
+};
 
 export const jobsTable = createTable("jobs", {
   id: text("id").primaryKey(),
@@ -30,7 +35,7 @@ export const jobsTable = createTable("jobs", {
   prompt: text("prompt").notNull(),
   jobStatus: text("job_status").$type<JobStatusType>().notNull(),
   script: jsonb("script"),
-  assetReferences: jsonb("asset_references"),
+  assetReferences: jsonb("asset_references").$type<AssetReferences>(),
   manifest: jsonb("manifest").$type<ManifestType>(),
   videoProps: jsonb("video_props").$type<PrepareVideoPropsType>(),
   videoUrl: text("video_url"),
@@ -90,26 +95,24 @@ export const uploadSessionsTable = createTable(
   },
 );
 
-export const assetType = ["image", "voice"] as const;
+export const assetType = ["voice_reference", "image_reference"] as const;
 
 export type AssetType = (typeof assetType)[number];
 
 export const usersAssetsTable = createTable("users_assets", {
-  id: bigint("id", { mode: "number" })
-    .generatedByDefaultAsIdentity()
-    .primaryKey(),
+  id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
-  characterName: text("character_name").notNull(),
+  // characterName: text("character_name").notNull(),
 
   assetType: text("asset_type").$type<AssetType>(),
-  r2Key: text(),
-  assetUrl: text("asset_url").notNull(),
+  r2Key: text("r2_key"),
   sizeBytes: bigint("size_bytes", { mode: "number" }),
   durationSeconds: numeric("duration_seconds"),
   label: text("label"),
-  sourceUploadSessionId: bigint("source_upload_session_id", {
-    mode: "number",
-  }).references(() => uploadSessionsTable.id, { onDelete: "set null" }),
+  sourceUploadSessionId: text("source_upload_session_id").references(
+    () => uploadSessionsTable.id,
+    { onDelete: "set null" },
+  ),
 
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at")

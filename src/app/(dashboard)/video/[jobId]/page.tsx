@@ -4,12 +4,13 @@ import { PreviewPlayer } from "~/app/_components/previewPlayer";
 import { VideoAssetsEditor } from "~/app/(dashboard)/video/_components/videoAssetsEditor";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 export default function Page() {
   const STATS_DURATION = 90; // Per round
 
+  const [pageStatus, setPageStatus] = useState("");
   const { jobId } = useParams<{ jobId: string }>();
 
   const { mutateAsync: startPipeline } = api.job.startPipeline.useMutation();
@@ -22,22 +23,25 @@ export default function Page() {
     startPipeline({ jobId }).catch(console.error);
   }, [jobId, startPipeline]);
 
-  const { data: status } = api.job.getStatus.useQuery(
-    { jobId },
-    {
-      enabled: !!jobId,
-      refetchInterval(query) {
-        const s = query.state.data;
+  useEffect(() => {
+    console.log("Page status:", pageStatus);
+    const source = new EventSource(`/video/${jobId}/progress`);
 
-        if (s === "complete" || s === "failed") return false;
-        return 5000;
-      },
-    },
-  );
+    source.onmessage = (event) => {
+      const status = JSON.parse(event.data);
+
+      setPageStatus(status);
+      console.log(status);
+
+      if (status === "complete" || status === "failed") source.close();
+    };
+
+    return () => source.close();
+  }, [jobId]);
 
   const { data: manifest } = api.job.getManifest.useQuery(
     { jobId },
-    { enabled: status === "complete" },
+    { enabled: pageStatus === "complete" },
   );
 
   if (!manifest?.videoProps) {
@@ -62,12 +66,12 @@ export default function Page() {
       failed: { label: "Failed", color: "bg-red-400" },
     };
 
-    const current = status ? statusLabels[status] : null;
+    const current = pageStatus ? statusLabels[pageStatus] : null;
 
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6">
         <div className="nb-card flex flex-col items-center gap-4 bg-white p-8">
-          {status === "failed" ? (
+          {pageStatus === "failed" ? (
             <div className="text-center">
               <p className="text-xl font-extrabold text-red-600 uppercase">
                 Generation Failed
