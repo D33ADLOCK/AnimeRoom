@@ -39,6 +39,12 @@ IMAGE PROMPTS (exactly 3 per character, inside "imagePrompts"):
 - Keep prompts concise (1–2 sentences). Do NOT mention background — just the character.
 - Example: "Chibi Gogeta in Super Saiyan Blue form, front-facing with tiny fists raised, big sparkly eyes, adorable smirk, strictly match the art style of the reference image"
 
+THUMBNAIL PROMPT RULES (single string field "thumbnailPrompt" at the top level):
+- Must depict BOTH characters together, facing each other in a dramatic face-off / versus pose.
+- Include their chibi forms (unless user says otherwise), and expressive faces.
+- Keep it to 1–2 sentences.
+- Example: "Chibi Sukuna and Chibi Sakura in a dramatic versus pose, glaring at each other with fierce adorable expressions, tiny fists raised, battle sparks between them"
+
 ONLY RETURN THE JSON OBJECT.
   `.trim();
 };

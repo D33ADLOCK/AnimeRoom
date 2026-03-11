@@ -66,6 +66,11 @@ export const RoastBattleSchema = z.object({
   character1: CharacterLoose,
   character2: CharacterLoose,
   imagePrompts,
+  thumbnailPrompt: z
+    .string()
+    .describe(
+      "A image prompt for the video thumbnail depicting BOTH characters together in a dramatic face-off pose.",
+    ),
   rounds: z.array(
     z.object({
       attacker: z.enum(["character1", "character2"]),

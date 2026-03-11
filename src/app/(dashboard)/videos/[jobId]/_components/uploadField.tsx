@@ -1,8 +1,15 @@
 "use client";
-
 import { useCallback, useState } from "react";
-import { api } from "~/trpc/react";
 import { useDropzone } from "react-dropzone";
+import { ALLOWED_SIZE } from "~/lib/constant";
+import { api } from "~/trpc/react";
+
+type UploadFieldProp = {
+  characterName: string;
+  characterSlot: "character1" | "character2";
+  assetType: "voice_reference" | "image_reference";
+  jobId: string;
+};
 
 type UploadState =
   | "idle"
@@ -13,7 +20,7 @@ type UploadState =
   | "done"
   | "error";
 
-const ACCEPT: Record<
+const ACCEPT_ASSET_TYPE: Record<
   "voice_reference" | "image_reference",
   Record<string, string[]>
 > = {
@@ -29,20 +36,14 @@ const ACCEPT: Record<
   },
 };
 
-const ALLOWED_SIZE = {
-  voice_reference: 10 * 1024 * 1024,
-  image_reference: 10 * 1024 * 1024,
-};
-
-// ── Hardcoded test values ──
-const assetType = "voice_reference";
-const characterSlot = "character1";
-const characterName = "Test Character";
-const jobId = "7aaf0bde-d069-4deb-bfba-d8933941d008";
-
-export default function Page() {
+export const UploadField = ({
+  characterName,
+  characterSlot,
+  assetType,
+  jobId,
+}: UploadFieldProp) => {
   const [state, setState] = useState<UploadState>("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<null | string>(null);
 
   const { mutateAsync: createUploadIntent } =
     api.asset.createUploadIntent.useMutation();
@@ -99,54 +100,23 @@ export default function Page() {
 
       void handleFileSelect();
     },
-    [createUploadIntent, confirmUpload],
+    [
+      createUploadIntent,
+      confirmUpload,
+      assetType,
+      characterName,
+      characterSlot,
+      jobId,
+    ],
   );
 
   // Dropzone
   const { getInputProps, getRootProps, isDragActive } = useDropzone({
     onDrop,
-    accept: ACCEPT[assetType],
+    accept: ACCEPT_ASSET_TYPE[assetType],
     maxSize: ALLOWED_SIZE[assetType],
     multiple: false,
   });
 
-  return (
-    <div
-      style={{ maxWidth: 600, margin: "40px auto", fontFamily: "sans-serif" }}
-    >
-      <h2>Upload Test</h2>
-
-      <div
-        {...getRootProps()}
-        style={{
-          border: `2px dashed ${isDragActive ? "#4f8" : "#555"}`,
-          borderRadius: 12,
-          padding: 40,
-          textAlign: "center",
-          cursor: "pointer",
-          background: isDragActive ? "#1a2a1a" : "#111",
-          transition: "all 0.2s",
-        }}
-      >
-        <input {...getInputProps()} />
-        {isDragActive ? (
-          <p>Drop it here...</p>
-        ) : (
-          <p>Drag &amp; drop a file, or click to browse</p>
-        )}
-        <small>MP3, WAV, M4A — max 10 MB</small>
-      </div>
-
-      {/* Status */}
-      {state !== "idle" && (
-        <p>
-          Status: <strong>{state}</strong>
-        </p>
-      )}
-      {error && <p style={{ color: "tomato" }}>{error}</p>}
-      {state === "done" && (
-        <p style={{ color: "#4f8" }}>✅ Upload confirmed!</p>
-      )}
-    </div>
-  );
-}
+  return <div></div>;
+};

@@ -2,6 +2,9 @@ import { generateAudiosWithRetry } from "./audio";
 import { processImagesWithRetry } from "./images";
 import { getTempUrl } from "../storage/r2";
 import type { RoastBattleSchemaType } from "../schemas/roast-battle";
+import path from "path";
+import { genImageFast } from "./imageReplicate";
+import { saveStreamToR2 } from "../storage/upload";
 
 // ─── Common R2 Assets ────────────────────────────────────────────────────────
 
@@ -27,8 +30,16 @@ export type PipelineReferences = {
   character2?: { voiceUrl?: string; imageUrl?: string };
 };
 
-const DEFAULT_VOICE_REF =
-  "https://pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev/common/audio/announcer/testing-gogeta-d1.mp3";
+const DEFAULT_VOICE_REF = {
+  character1: path.posix.join(
+    process.env.R2_PUBLIC_BASE_URL!,
+    "references/0073220e1dc738a5/7c6fac23-1843-4787-aab8-839f3d407f70.mp3",
+  ),
+  character2: path.posix.join(
+    process.env.R2_PUBLIC_BASE_URL!,
+    "references/0073220e1dc738a5/602c57c3-9692-4d6d-accf-26411eb19c97.mp3",
+  ),
+};
 
 // ─── Orchestration ───────────────────────────────────────────────────────────
 
@@ -48,8 +59,8 @@ const generateAllDialogues = async (
     // Per-character voice reference — falls back to default
     referenceUrl:
       r.attacker === "character1"
-        ? (references?.character1?.voiceUrl ?? DEFAULT_VOICE_REF)
-        : (references?.character2?.voiceUrl ?? DEFAULT_VOICE_REF),
+        ? (references?.character1?.voiceUrl ?? DEFAULT_VOICE_REF.character1)
+        : (references?.character2?.voiceUrl ?? DEFAULT_VOICE_REF.character2),
   }));
 
   const allAudios = await generateAudiosWithRetry(allRounds, jobId);
@@ -102,6 +113,21 @@ const generateAllImages = async (
   return { char1Images, char2Images, failed };
 };
 
+const generateThumbnail = async (
+  script: RoastBattleSchemaType,
+  jobId: string,
+) => {
+  console.log("🖼  Generating thumbnail...");
+
+  const image = await genImageFast(script.thumbnailPrompt);
+
+  const filePath = path.posix.join(jobId, "images", "thumbnail.png");
+  const publicUrl = await saveStreamToR2(image.file, filePath);
+
+  console.log("✅ Thumbnail saved.\n");
+  return { fileName: "thumbnail.png", publicUrl };
+};
+
 // ─── Main Entry Point ────────────────────────────────────────────────────────
 
 export const runPipeline = async (
@@ -109,9 +135,10 @@ export const runPipeline = async (
   jobId: string,
   references?: PipelineReferences,
 ) => {
-  const [dialogues, images] = await Promise.all([
+  const [dialogues, images, thumbnail] = await Promise.all([
     generateAllDialogues(script, jobId, references),
     generateAllImages(script, jobId),
+    generateThumbnail(script, jobId),
   ]);
 
   const commonAssets = {
@@ -131,6 +158,7 @@ export const runPipeline = async (
     common: commonAssets,
     audio: dialogues,
     images,
+    thumbnail,
   };
 
   console.log("\n🎉 Pipeline complete!");

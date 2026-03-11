@@ -183,6 +183,7 @@ export const prepareVideoProps = async (manifest: ManifestType) => {
     common,
     rounds,
     audioDuration,
+    thumbnail: manifest.thumbnail,
   };
 };
 

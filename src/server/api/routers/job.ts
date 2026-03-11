@@ -13,7 +13,7 @@ import {
 } from "~/lib/video/prepareVideoProps";
 import { generateAndSaveAudio } from "~/lib/ai/audio";
 import { getTempUrl } from "~/lib/storage/r2";
-import { genImage } from "~/lib/ai/imageReplicate";
+import { genImage, genImageFast } from "~/lib/ai/imageReplicate";
 import { saveStreamToR2 } from "~/lib/storage/upload";
 import path from "path";
 import { TRPCError } from "@trpc/server";
@@ -84,6 +84,24 @@ export const jobRouter = createTRPCRouter({
       }
     }),
 
+  getScript: protectedProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const verify = await ctx.db.query.jobsTable.findFirst({
+        where: (t, { and, eq }) =>
+          and(eq(t.id, input.jobId), eq(t.userId, ctx.userId)),
+        columns: { id: true, script: true },
+      });
+
+      if (!verify)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not verified",
+        });
+
+      return { id: verify.id, script: verify.script };
+    }),
+
   continuePipeline: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -152,7 +170,11 @@ export const jobRouter = createTRPCRouter({
         // ─── Save Manifest ───
         await ctx.db
           .update(jobsTable)
-          .set({ jobStatus: "saving_manifest", manifest })
+          .set({
+            jobStatus: "saving_manifest",
+            manifest,
+            thumbnailUrl: manifest.thumbnail,
+          })
           .where(eq(jobsTable.id, input.jobId));
 
         // ─── Transform to Remotion Props ───
@@ -259,21 +281,6 @@ export const jobRouter = createTRPCRouter({
       }
     }),
 
-  // getStatus: protectedProcedure
-  //   .input(z.object({ jobId: z.string() }))
-  //   .query(async ({ ctx, input }) => {
-  //     const result = await ctx.db.query.jobsTable.findFirst({
-  //       where: (t, { eq, and }) =>
-  //         and(eq(t.id, input.jobId), eq(t.userId, ctx.userId)),
-  //     });
-
-  //     if (!result) throw new Error("Couldn't find the user");
-
-  //     const jobStatus = result.jobStatus;
-
-  //     return jobStatus;
-  //   }),
-
   getManifest: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -340,9 +347,9 @@ export const jobRouter = createTRPCRouter({
 
       if (!result) throw new Error("Unauthorised request");
 
-      const referenceImageUrl = await getTempUrl();
+      // const referenceImageUrl = await getTempUrl();
 
-      const imageStream = await genImage(input.prompt, referenceImageUrl);
+      const imageStream = await genImageFast(input.prompt);
 
       const fileName = `${input.name}-${input.angle}.png`;
       const r2Key = path.posix.join(input.jobId, "images", fileName);
@@ -396,7 +403,7 @@ export const jobRouter = createTRPCRouter({
       columns: {
         id: true,
         createdAt: true,
-        videoProps: true,
+        thumbnailUrl: true,
       },
       orderBy: (t, { desc }) => desc(t.createdAt),
     });

@@ -9,7 +9,6 @@ export async function GET(
 ) {
   const { jobId } = await ctx.params;
 
-  console.log(jobId);
   const { userId } = await auth();
 
   if (!userId) return new Response("Unauthorized", { status: 401 });
@@ -28,38 +27,40 @@ export async function GET(
   //   let lastUpdatedAt: string | null = null;
   const stream = new ReadableStream({
     start(controller) {
-      const interval = setInterval(async () => {
-        try {
-          const current = await db.query.jobsTable.findFirst({
-            where: (t, { eq }) => eq(t.id, jobId),
-            columns: { id: true, jobStatus: true },
-          });
+      const pollStatus = async () => {
+        const current = await db.query.jobsTable.findFirst({
+          where: (t, { eq }) => eq(t.id, jobId),
+          columns: { id: true, jobStatus: true },
+        });
 
-          if (!current) {
-            clearInterval(interval);
-            controller.close();
-            return;
-          }
+        if (!current) {
+          clearInterval(interval);
+          controller.close();
+          return;
+        }
 
-          let status = current.jobStatus;
-          console.log("sse: ", status);
+        const status = current.jobStatus;
+        console.log("sse: ", status);
 
-          if (status !== lastStatus) {
-            lastStatus = status;
+        if (status !== lastStatus) {
+          lastStatus = status;
 
-            const message = `data: ${JSON.stringify(status)}\n\n`;
+          const message = `data: ${JSON.stringify(status)}\n\n`;
 
-            controller.enqueue(encoder.encode(message));
-          }
+          controller.enqueue(encoder.encode(message));
+        }
 
-          if (status === "complete" || status === "failed") {
-            controller.close();
-            clearInterval(interval);
-          }
-        } catch {
+        if (status === "complete" || status === "failed") {
           controller.close();
           clearInterval(interval);
         }
+      };
+
+      const interval = setInterval(() => {
+        void pollStatus().catch(() => {
+          controller.close();
+          clearInterval(interval);
+        });
       }, INTERVAL_TIMER);
 
       signal.addEventListener("abort", () => {

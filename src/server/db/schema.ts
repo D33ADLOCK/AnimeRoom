@@ -38,6 +38,10 @@ export const jobsTable = createTable("jobs", {
   assetReferences: jsonb("asset_references").$type<AssetReferences>(),
   manifest: jsonb("manifest").$type<ManifestType>(),
   videoProps: jsonb("video_props").$type<PrepareVideoPropsType>(),
+  thumbnailUrl: jsonb("thumbnail_url").$type<{
+    fileName: string;
+    publicUrl: string;
+  }>(),
   videoUrl: text("video_url"),
   error: text("error"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -91,6 +95,7 @@ export const uploadSessionsTable = createTable(
     return {
       userIdIdx: index("upload_session_user_id_idx").on(table.userId),
       jobIdIdx: index("upload_session_job_id_idx").on(table.jobId),
+      jobStatusIdx: index("job_status_index").on(table.status),
     };
   },
 );

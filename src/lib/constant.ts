@@ -4,3 +4,8 @@ export const VOICE_IDS = {
 };
 
 export const UPLOAD_URL_EXPIRY = 10 * 60; // 10 min in sec
+
+export const ALLOWED_SIZE = {
+  voice_reference: 10 * 1024 * 1024,
+  image_reference: 10 * 1024 * 1024,
+};

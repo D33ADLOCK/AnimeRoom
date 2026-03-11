@@ -15,6 +15,13 @@
       "when": 1772819277479,
       "tag": "0001_past_mikhail_rasputin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773154971932,
+      "tag": "0002_wandering_screwball",
+      "breakpoints": true
     }
   ]
 }

@@ -245,7 +245,7 @@ export const assetsRouter = createTRPCRouter({
   listMyAssets: protectedProcedure.query(async ({ ctx }) => {
     const assets = await ctx.db.query.usersAssetsTable.findMany({
       where: (t, { eq }) => eq(t.userId, ctx.userId),
-      columns: { id: true, assetType: true, r2Key: true },
+      columns: { id: true, assetType: true, r2Key: true, label: true },
     });
 
     if (assets.length === 0)
@@ -258,7 +258,7 @@ export const assetsRouter = createTRPCRouter({
       assets.map(async (a) => {
         const url = await getPresignedReadUrl(a.r2Key!);
 
-        return { id: a.id, assetType: a.assetType, url };
+        return { id: a.id, assetType: a.assetType, url, label: a.label };
       }),
     );
 

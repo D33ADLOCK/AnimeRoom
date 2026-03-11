@@ -1,7 +1,7 @@
 import path from "path";
 import { alphaTrimBuffer } from "../image/alphaTrimBuffer";
 import { getTempUrl } from "../storage/r2";
-import { genImage } from "./imageReplicate";
+import { genImage, genImageFast } from "./imageReplicate";
 import { removeBg } from "./removebackground";
 import { saveBufferToR2 } from "../storage/saveBufferToR2";
 
@@ -12,9 +12,11 @@ export async function processImage(
   name: string,
 ) {
   const refImage = await getTempUrl();
-  const getImage = await genImage(prompt, refImage);
 
-  const bgOutput = await removeBg(getImage.url);
+  const getImageFast = await genImageFast(prompt);
+  // const getImage = await genImage(prompt, refImage);
+
+  const bgOutput = await removeBg(getImageFast.url);
 
   const trimAlpha = await alphaTrimBuffer(bgOutput.imageBuffer);
 
