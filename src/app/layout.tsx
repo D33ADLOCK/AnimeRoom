@@ -6,6 +6,7 @@ import { Geist } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "sonner";
+import { Providers } from "./provider";
 
 export const metadata: Metadata = {
   title: "Anime Room",
@@ -27,8 +28,10 @@ export default function RootLayout({
       <body>
         <ClerkProvider>
           <TRPCReactProvider>
-            {children}
-            <Toaster />
+            <Providers>
+              {children}
+              <Toaster />
+            </Providers>
           </TRPCReactProvider>
         </ClerkProvider>
       </body>

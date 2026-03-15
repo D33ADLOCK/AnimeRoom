@@ -1,11 +1,14 @@
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { randomUUID } from "crypto";
-import { generateScript } from "~/lib/ai/grok";
+import { generateScript } from "~/lib/ai/(depc)grok";
 import { jobsTable, usersAssetsTable } from "~/server/db/schema";
 import { runPipeline, type PipelineReferences } from "~/lib/ai/pipeline";
 import { getPresignedReadUrl } from "~/lib/storage/genPresignedUrl";
-import type { RoastBattleSchemaType } from "~/lib/schemas/roast-battle";
+import {
+  RoastBattleSchema,
+  type RoastBattleSchemaType,
+} from "~/lib/schemas/roast-battle";
 import { and, eq } from "drizzle-orm";
 import {
   prepareVideoProps,
@@ -17,6 +20,7 @@ import { genImage, genImageFast } from "~/lib/ai/imageReplicate";
 import { saveStreamToR2 } from "~/lib/storage/upload";
 import path from "path";
 import { TRPCError } from "@trpc/server";
+import { runLivePipeline } from "~/lib/pipeline/livePipeline";
 
 const VideoPropsInput: z.ZodType<PrepareVideoPropsType> = z.any();
 
@@ -62,7 +66,7 @@ export const jobRouter = createTRPCRouter({
         .returning({ id: jobsTable.id });
 
       try {
-        const script = await generateScript(job.prompt);
+        const script = await generateScript(job.prompt, RoastBattleSchema);
         if (!script) throw new Error("Script generation returned empty");
 
         await ctx.db
@@ -227,7 +231,7 @@ export const jobRouter = createTRPCRouter({
           .set({ jobStatus: "generating_script" })
           .where(eq(jobsTable.id, input.jobId));
 
-        const script = await generateScript(job.prompt);
+        const script = await generateScript(job.prompt, RoastBattleSchema);
         if (!script) throw new Error("Script generation failed");
 
         // Save script to DB
@@ -286,11 +290,15 @@ export const jobRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const videoProps = await ctx.db.query.jobsTable.findFirst({
         where: (t, { eq, and }) =>
-          and(eq(t.id, input.jobId), eq(t.userId, ctx.userId)),
+          and(
+            eq(t.id, input.jobId),
+            eq(t.userId, ctx.userId),
+            eq(t.jobStatus, "complete"),
+          ),
         columns: { videoProps: true },
       });
       const vp = videoProps?.videoProps;
-      if (!vp) throw new Error("Transformation failed");
+      if (!vp) return null;
 
       return videoProps;
     }),
@@ -408,4 +416,22 @@ export const jobRouter = createTRPCRouter({
       orderBy: (t, { desc }) => desc(t.createdAt),
     });
   }),
+
+  createLivePipeline: protectedProcedure
+    .input(z.object({ jobId: z.string(), prompt: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // const verify = await ctx.db.query.jobsTable.findFirst({
+      //   where: (t, { eq, and }) =>
+      //     and(eq(t.id, input.jobId), eq(t.userId, ctx.userId)),
+      //   columns: { id: true },
+      // });
+
+      // if (!verify)
+      //   throw new TRPCError({
+      //     code: "UNAUTHORIZED",
+      //     message: "Unauthorized Error",
+      //   });
+
+      void runLivePipeline(input.prompt);
+    }),
 });

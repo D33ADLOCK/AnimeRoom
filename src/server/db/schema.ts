@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { ManifestType } from "~/lib/ai/pipeline";
 import type { PrepareVideoPropsType } from "~/lib/video/prepareVideoProps";
+import type { RoastBattleSchemaType } from "~/lib/schemas/roast-battle";
 
 export const createTable = pgTableCreator((name) => `${name}`);
 export const jobStatus = [
@@ -34,7 +35,7 @@ export const jobsTable = createTable("jobs", {
   userId: text("user_id").notNull(),
   prompt: text("prompt").notNull(),
   jobStatus: text("job_status").$type<JobStatusType>().notNull(),
-  script: jsonb("script"),
+  script: jsonb("script").$type<RoastBattleSchemaType>(),
   assetReferences: jsonb("asset_references").$type<AssetReferences>(),
   manifest: jsonb("manifest").$type<ManifestType>(),
   videoProps: jsonb("video_props").$type<PrepareVideoPropsType>(),

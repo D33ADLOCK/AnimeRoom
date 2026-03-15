@@ -23,6 +23,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.43",
+    "@ai-sdk/groq": "^3.0.29",
     "@ai-sdk/xai": "^3.0.56",
     "@aws-sdk/client-s3": "3.990.0",
     "@aws-sdk/lib-storage": "^3.990.0",
@@ -41,6 +43,8 @@
     "@trpc/client": "^11.0.0",
     "@trpc/react-query": "^11.0.0",
     "@trpc/server": "^11.0.0",
+    "@upstash/realtime": "^1.0.3",
+    "@upstash/redis": "^1.36.4",
     "add": "^2.0.6",
     "ai": "^6.0.86",
     "class-variance-authority": "^0.7.1",

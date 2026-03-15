@@ -15,9 +15,6 @@ const StatLoose = z.object({
 
 const SkillLoose = z.object({
   name: z.string(),
-  letter: z
-    .string()
-    .describe("The initial letter of the skill name and exactly 1 character"),
   color: z.string().describe("Hex color like #38BDF8"),
   desc: z.string().describe("short description for the skill"),
 });

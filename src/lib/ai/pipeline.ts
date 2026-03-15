@@ -31,14 +31,8 @@ export type PipelineReferences = {
 };
 
 const DEFAULT_VOICE_REF = {
-  character1: path.posix.join(
-    process.env.R2_PUBLIC_BASE_URL!,
-    "references/0073220e1dc738a5/7c6fac23-1843-4787-aab8-839f3d407f70.mp3",
-  ),
-  character2: path.posix.join(
-    process.env.R2_PUBLIC_BASE_URL!,
-    "references/0073220e1dc738a5/602c57c3-9692-4d6d-accf-26411eb19c97.mp3",
-  ),
+  character1: `${process.env.R2_PUBLIC_BASE_URL!}/references/0073220e1dc738a5/7c6fac23-1843-4787-aab8-839f3d407f70.mp3`,
+  character2: `${process.env.R2_PUBLIC_BASE_URL!}/references/0073220e1dc738a5/602c57c3-9692-4d6d-accf-26411eb19c97.mp3`,
 };
 
 // ─── Orchestration ───────────────────────────────────────────────────────────

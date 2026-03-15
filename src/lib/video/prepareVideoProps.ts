@@ -192,7 +192,7 @@ export type PrepareVideoPropsType = Awaited<
 >;
 
 // Uses Remotion's official media-parser to extract audio duration
-const getAudioDuration = async (src: string): Promise<number> => {
+export const getAudioDuration = async (src: string): Promise<number> => {
   const result = await parseMedia({
     src,
     fields: {

@@ -1,7 +1,7 @@
 import { generateText, Output } from "ai";
 import { xai } from "@ai-sdk/xai";
-import { RoastBattleSchema } from "../schemas/roast-battle";
 import "dotenv/config";
+import { z } from "zod";
 
 const Userprompt = (userprompt: string) => {
   return `
@@ -49,11 +49,14 @@ ONLY RETURN THE JSON OBJECT.
   `.trim();
 };
 
-export async function generateScript(userPrompt: string) {
+export async function generateScript<TSchema>(
+  userPrompt: string,
+  schema: z.ZodType<TSchema>,
+) {
   const { output } = await generateText({
     model: xai("grok-4-1-fast-non-reasoning"),
     output: Output.object({
-      schema: RoastBattleSchema,
+      schema,
     }),
     prompt: Userprompt(userPrompt),
   });
