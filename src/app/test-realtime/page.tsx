@@ -1,16 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRealtime } from "~/lib/redis/realtime-client";
 import { api } from "~/trpc/react";
 import type { LivePreviewStateSchema } from "~/lib/realtime/job-event";
+import { Player } from "@remotion/player";
+import LiveComposition from "~/remotion/liveComposition";
+import type { LiveStateType } from "~/lib/pipeline/createEmptyPreviewState";
 
 export default function Page() {
-  const [liveState, setLiveState] = useState<LivePreviewStateSchema | null>(
-    null,
-  );
+  const [liveState, setLiveState] = useState<null | LiveStateType>(null);
 
-  const mutation = api.job.createLivePipeline.useMutation();
+  const hasFired = useRef(false);
+
+  const { mutateAsync: startLivePipeline } =
+    api.job.createLivePipeline.useMutation();
+
+  useEffect(() => {
+    if (hasFired.current) return;
+    hasFired.current = true;
+
+    void startLivePipeline({
+      jobId: "124",
+      prompt: "Generate a roast battle between naruto and Sasuke",
+    });
+  }, []);
 
   useRealtime({
     events: ["pipeline-events"],
@@ -18,38 +32,39 @@ export default function Page() {
       console.log(`Received ${event}:`, data);
 
       // We expect the data to be the LiveStateType (which matches LivePreviewStateSchema)
-      if (data && (data as any).type === "previewUpdate") {
-        setLiveState(data as LivePreviewStateSchema);
+      if (data.type === "previewUpdate") {
+        setLiveState(data);
       }
     },
   });
 
   return (
-    <div className="p-8">
-      <h1 className="mb-4 text-2xl font-bold">Pipeline Streaming Test</h1>
-
-      <button
-        onClick={() => {
-          setLiveState(null);
-          mutation.mutate({
-            jobId: "123456",
-            prompt: "Generate a roast battle between goku and freeza",
-          });
-        }}
-        disabled={mutation.isPending}
-        className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 disabled:opacity-50"
-      >
-        {mutation.isPending ? "Starting..." : "Start Pipeline"}
-      </button>
-
-      <div className="mt-8">
-        <h2 className="mb-2 text-xl font-semibold">Live State Stream</h2>
-        <pre className="max-h-[800px] overflow-auto rounded-lg bg-gray-100 p-4 text-sm dark:bg-zinc-900">
-          {liveState
-            ? JSON.stringify(liveState, null, 2)
-            : "Waiting for pipeline to start..."}
-        </pre>
-      </div>
+    <div
+      style={{
+        width: "min(420px, 100%)",
+        aspectRatio: "9 / 16",
+        margin: "0 auto",
+        borderRadius: "16px",
+        overflow: "hidden",
+      }}
+    >
+      {liveState && liveState.data.totalDurationFrames > 0 && (
+        <Player
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+          }}
+          component={LiveComposition}
+          inputProps={{ props: liveState }}
+          fps={30}
+          durationInFrames={liveState.data.totalDurationFrames}
+          compositionHeight={1920}
+          compositionWidth={1080}
+          loop
+          controls
+        />
+      )}
     </div>
   );
 }

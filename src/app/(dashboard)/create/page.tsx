@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
-import { UploadAssetField } from "../videos/[jobId]/_components/uploadAssetField";
 
 export default function CreatePage() {
   const userPromptSchema = z.object({

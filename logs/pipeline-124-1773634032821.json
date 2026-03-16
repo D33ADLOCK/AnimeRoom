@@ -1,0 +1,228 @@
+{
+  "jobId": "124",
+  "timestamp": "2026-03-16T04:07:12.819Z",
+  "totalPipelineDurationMs": 90442,
+  "totalPipelineDurationSec": "90.44s",
+  "tasks": {
+    "Init Pipeline & State": {
+      "start": "2026-03-16T04:05:42.377Z",
+      "end": "2026-03-16T04:05:42.377Z",
+      "durationSec": "INCOMPLETE"
+    },
+    "Character Streaming Setup": {
+      "start": "2026-03-16T04:05:42.377Z",
+      "end": "2026-03-16T04:05:42.380Z",
+      "durationSec": "0.00s"
+    },
+    "Rounds Streaming Setup": {
+      "start": "2026-03-16T04:05:42.381Z",
+      "end": "2026-03-16T04:05:42.381Z",
+      "durationSec": "INCOMPLETE"
+    },
+    "Char 1 [Naruto Uzumaki] Image Gen": {
+      "start": "2026-03-16T04:05:50.249Z",
+      "end": "2026-03-16T04:05:53.820Z",
+      "durationSec": "3.57s"
+    },
+    "Round 1 Generation (Images+Audio)": {
+      "start": "2026-03-16T04:05:50.804Z",
+      "end": "2026-03-16T04:06:37.457Z",
+      "durationSec": "46.65s"
+    },
+    "Round 1 attacker image": {
+      "start": "2026-03-16T04:05:50.804Z",
+      "end": "2026-03-16T04:05:54.104Z",
+      "durationSec": "3.30s"
+    },
+    "Round 1 opponent image": {
+      "start": "2026-03-16T04:05:50.805Z",
+      "end": "2026-03-16T04:05:54.123Z",
+      "durationSec": "3.32s"
+    },
+    "Round 1 audio": {
+      "start": "2026-03-16T04:05:50.805Z",
+      "end": "2026-03-16T04:06:37.457Z",
+      "durationSec": "46.65s"
+    },
+    "Announcer Init & Audio Check": {
+      "start": "2026-03-16T04:05:53.820Z",
+      "end": "2026-03-16T04:05:54.258Z",
+      "durationSec": "0.44s"
+    },
+    "Char 1 [Naruto Uzumaki] State Emitted": {
+      "start": "2026-03-16T04:05:54.258Z",
+      "end": "2026-03-16T04:05:54.310Z",
+      "durationSec": "0.05s"
+    },
+    "Char 2 [Sasuke Uchiha] Image Gen": {
+      "start": "2026-03-16T04:05:54.310Z",
+      "end": "2026-03-16T04:05:57.598Z",
+      "durationSec": "3.29s"
+    },
+    "Char 2 [Sasuke Uchiha] State Emitted": {
+      "start": "2026-03-16T04:05:57.598Z",
+      "end": "2026-03-16T04:05:57.664Z",
+      "durationSec": "0.07s"
+    },
+    "Round 1 Audio Duration Fetch": {
+      "start": "2026-03-16T04:06:37.457Z",
+      "end": "2026-03-16T04:06:37.538Z",
+      "durationSec": "0.08s"
+    },
+    "Round 1 State Emitted": {
+      "start": "2026-03-16T04:06:37.538Z",
+      "end": "2026-03-16T04:06:37.708Z",
+      "durationSec": "0.17s"
+    },
+    "Round 2 Generation (Images+Audio)": {
+      "start": "2026-03-16T04:06:37.708Z",
+      "end": "2026-03-16T04:06:43.513Z",
+      "durationSec": "5.80s"
+    },
+    "Round 2 attacker image": {
+      "start": "2026-03-16T04:06:37.708Z",
+      "end": "2026-03-16T04:06:43.513Z",
+      "durationSec": "5.80s"
+    },
+    "Round 2 opponent image": {
+      "start": "2026-03-16T04:06:37.708Z",
+      "end": "2026-03-16T04:06:43.207Z",
+      "durationSec": "5.50s"
+    },
+    "Round 2 audio": {
+      "start": "2026-03-16T04:06:37.709Z",
+      "end": "2026-03-16T04:06:42.573Z",
+      "durationSec": "4.86s"
+    },
+    "Round 2 Audio Duration Fetch": {
+      "start": "2026-03-16T04:06:43.513Z",
+      "end": "2026-03-16T04:06:43.586Z",
+      "durationSec": "0.07s"
+    },
+    "Round 2 State Emitted": {
+      "start": "2026-03-16T04:06:43.586Z",
+      "end": "2026-03-16T04:06:43.683Z",
+      "durationSec": "0.10s"
+    },
+    "Round 3 Generation (Images+Audio)": {
+      "start": "2026-03-16T04:06:43.683Z",
+      "end": "2026-03-16T04:06:50.443Z",
+      "durationSec": "6.76s"
+    },
+    "Round 3 attacker image": {
+      "start": "2026-03-16T04:06:43.683Z",
+      "end": "2026-03-16T04:06:50.443Z",
+      "durationSec": "6.76s"
+    },
+    "Round 3 opponent image": {
+      "start": "2026-03-16T04:06:43.683Z",
+      "end": "2026-03-16T04:06:49.146Z",
+      "durationSec": "5.46s"
+    },
+    "Round 3 audio": {
+      "start": "2026-03-16T04:06:43.683Z",
+      "end": "2026-03-16T04:06:48.357Z",
+      "durationSec": "4.67s"
+    },
+    "Round 3 Audio Duration Fetch": {
+      "start": "2026-03-16T04:06:50.443Z",
+      "end": "2026-03-16T04:06:50.527Z",
+      "durationSec": "0.08s"
+    },
+    "Round 3 State Emitted": {
+      "start": "2026-03-16T04:06:50.527Z",
+      "end": "2026-03-16T04:06:50.688Z",
+      "durationSec": "0.16s"
+    },
+    "Round 4 Generation (Images+Audio)": {
+      "start": "2026-03-16T04:06:50.688Z",
+      "end": "2026-03-16T04:06:58.078Z",
+      "durationSec": "7.39s"
+    },
+    "Round 4 attacker image": {
+      "start": "2026-03-16T04:06:50.688Z",
+      "end": "2026-03-16T04:06:58.078Z",
+      "durationSec": "7.39s"
+    },
+    "Round 4 opponent image": {
+      "start": "2026-03-16T04:06:50.688Z",
+      "end": "2026-03-16T04:06:56.418Z",
+      "durationSec": "5.73s"
+    },
+    "Round 4 audio": {
+      "start": "2026-03-16T04:06:50.688Z",
+      "end": "2026-03-16T04:06:55.262Z",
+      "durationSec": "4.57s"
+    },
+    "Round 4 Audio Duration Fetch": {
+      "start": "2026-03-16T04:06:58.078Z",
+      "end": "2026-03-16T04:06:58.154Z",
+      "durationSec": "0.08s"
+    },
+    "Round 4 State Emitted": {
+      "start": "2026-03-16T04:06:58.154Z",
+      "end": "2026-03-16T04:06:58.308Z",
+      "durationSec": "0.15s"
+    },
+    "Round 5 Generation (Images+Audio)": {
+      "start": "2026-03-16T04:06:58.308Z",
+      "end": "2026-03-16T04:07:05.427Z",
+      "durationSec": "7.12s"
+    },
+    "Round 5 attacker image": {
+      "start": "2026-03-16T04:06:58.308Z",
+      "end": "2026-03-16T04:07:05.427Z",
+      "durationSec": "7.12s"
+    },
+    "Round 5 opponent image": {
+      "start": "2026-03-16T04:06:58.308Z",
+      "end": "2026-03-16T04:07:04.608Z",
+      "durationSec": "6.30s"
+    },
+    "Round 5 audio": {
+      "start": "2026-03-16T04:06:58.308Z",
+      "end": "2026-03-16T04:07:02.989Z",
+      "durationSec": "4.68s"
+    },
+    "Round 5 Audio Duration Fetch": {
+      "start": "2026-03-16T04:07:05.427Z",
+      "end": "2026-03-16T04:07:05.516Z",
+      "durationSec": "0.09s"
+    },
+    "Round 5 State Emitted": {
+      "start": "2026-03-16T04:07:05.516Z",
+      "end": "2026-03-16T04:07:05.676Z",
+      "durationSec": "0.16s"
+    },
+    "Round 6 Generation (Images+Audio)": {
+      "start": "2026-03-16T04:07:05.677Z",
+      "end": "2026-03-16T04:07:12.590Z",
+      "durationSec": "6.91s"
+    },
+    "Round 6 attacker image": {
+      "start": "2026-03-16T04:07:05.677Z",
+      "end": "2026-03-16T04:07:11.853Z",
+      "durationSec": "6.18s"
+    },
+    "Round 6 opponent image": {
+      "start": "2026-03-16T04:07:05.677Z",
+      "end": "2026-03-16T04:07:12.589Z",
+      "durationSec": "6.91s"
+    },
+    "Round 6 audio": {
+      "start": "2026-03-16T04:07:05.677Z",
+      "end": "2026-03-16T04:07:10.061Z",
+      "durationSec": "4.38s"
+    },
+    "Round 6 Audio Duration Fetch": {
+      "start": "2026-03-16T04:07:12.590Z",
+      "end": "2026-03-16T04:07:12.658Z",
+      "durationSec": "0.07s"
+    },
+    "Round 6 State Emitted": {
+      "start": "2026-03-16T04:07:12.659Z",
+      "end": "2026-03-16T04:07:12.818Z",
+      "durationSec": "0.16s"
+    }
+  }
+}

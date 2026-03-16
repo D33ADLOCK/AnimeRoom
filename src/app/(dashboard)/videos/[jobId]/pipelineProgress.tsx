@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { JobStatusType } from "~/server/db/schema";
 import { api } from "~/trpc/react";

@@ -1,5 +1,5 @@
-import { parseMedia } from "@remotion/media-parser";
 import { type ManifestType } from "~/lib/ai/pipeline";
+import { getAudioDuration } from "~/lib/audio/getAudioDuration";
 
 type CharacterImageType = {
   angle: string;
@@ -190,15 +190,3 @@ export const prepareVideoProps = async (manifest: ManifestType) => {
 export type PrepareVideoPropsType = Awaited<
   ReturnType<typeof prepareVideoProps>
 >;
-
-// Uses Remotion's official media-parser to extract audio duration
-export const getAudioDuration = async (src: string): Promise<number> => {
-  const result = await parseMedia({
-    src,
-    fields: {
-      durationInSeconds: true,
-    },
-  });
-
-  return result.durationInSeconds ?? 0;
-};

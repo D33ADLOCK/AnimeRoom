@@ -432,6 +432,6 @@ export const jobRouter = createTRPCRouter({
       //     message: "Unauthorized Error",
       //   });
 
-      void runLivePipeline(input.prompt);
+      void runLivePipeline(input.jobId, input.prompt);
     }),
 });

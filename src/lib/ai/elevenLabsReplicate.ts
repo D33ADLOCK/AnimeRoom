@@ -1,23 +1,26 @@
 import Replicate, { type FileOutput } from "replicate";
+import type { ELEVENLABS_FLASH_VOICE } from "../constant";
 
 const ELEVENLABS_FLASH = "elevenlabs/flash-v2.5";
-
-const CHATTERBOX_MODEL =
-  "resemble-ai/chatterbox-multilingual:9cfba4c265e685f840612be835424f8c33bdee685d7466ece7684b0d9d4c0b1c";
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_IMAGE_API_TOKEN,
 });
 
-export async function genAudio(text: string, referenceUrl: string) {
+export async function genAudioFast(
+  text: string,
+  voice: typeof ELEVENLABS_FLASH_VOICE,
+) {
   const input = {
-    seed: 0,
-    text,
-    cfg_weight: 0.5,
-    language: "en",
-    temperature: 0.8,
-    reference_audio: referenceUrl,
-    exaggeration: 0.5,
+    speed: 1,
+    style: 0,
+    voice,
+    prompt: text,
+    next_text: "",
+    stability: 0.5,
+    language_code: "en",
+    previous_text: "",
+    similarity_boost: 0.75,
   };
 
   const output = await replicate.run(ELEVENLABS_FLASH, { input });
