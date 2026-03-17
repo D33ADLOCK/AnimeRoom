@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" RENAME COLUMN "thumbnail_url" TO "meta_data";

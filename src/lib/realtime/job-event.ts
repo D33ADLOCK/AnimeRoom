@@ -1,6 +1,12 @@
 import z from "zod";
 import { SkillSchema, StatSchema } from "../schemas/roast-battle-split";
 
+export const MetaSchema = z.object({
+  battleTitle: z.string(),
+  shortSubtitle: z.string(),
+  thumbnailUrl: z.string().optional(),
+});
+
 const CommonPreviewSchema = z.object({
   backgroundImageUrl: z.string().url(),
   announcerImageUrl: z.string().url(),
@@ -29,15 +35,11 @@ export const RoundPreviewSchema = z.object({
   ready: z.boolean(),
   durationFrames: z.number().int().nonnegative(),
   attackingCharacter: z.enum(["character1", "character2"]),
-  attackerName: z.string(),
   attackerImage: z.string().url().optional(),
   dialogueAudio: z.string().url().optional(),
   dialogueText: z.string(),
   damage: z.number(),
-  opponentName: z.string(),
   opponentProfile: z.string().url().optional(),
-  startingHealth: z.number().min(0).max(100),
-  endingHealth: z.number().min(0).max(100),
 });
 
 export const livePreviewStateSchema = z.object({
@@ -45,6 +47,7 @@ export const livePreviewStateSchema = z.object({
   version: z.number().int().nonnegative(),
   totalDurationFrames: z.number().int().nonnegative(),
 
+  meta: MetaSchema,
   common: CommonPreviewSchema,
 
   announcer: AnnouncerPreviewSchema,

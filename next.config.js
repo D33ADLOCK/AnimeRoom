@@ -13,6 +13,10 @@ const config = {
         hostname: "pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "replicate.delivery",
+      },
     ],
   },
 };

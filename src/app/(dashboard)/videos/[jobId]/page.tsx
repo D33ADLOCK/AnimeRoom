@@ -1,6 +1,6 @@
 import { api } from "~/trpc/server";
 import { VideoPlayer } from "./videoPlayer";
-import { PipelineProgress } from "./pipelineProgress";
+import LivePlayer from "./livePlayer";
 
 export default async function Page({
   params,
@@ -16,6 +16,6 @@ export default async function Page({
   return isJobCompleted ? (
     <VideoPlayer jobId={jobId} videoProps={videoProps.videoProps!} />
   ) : (
-    <PipelineProgress jobId={jobId} />
+    <LivePlayer />
   );
 }

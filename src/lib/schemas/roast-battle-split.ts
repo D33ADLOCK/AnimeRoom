@@ -46,8 +46,6 @@ export type RoastBattleCharacterSchemaType = z.infer<
 
 export const RoundSchema = z.object({
   attacker: z.enum(["character1", "character2"]),
-  attackerName: z.string().describe("Name of the attacking character"),
-  opponentName: z.string().describe("Name of the opponent character"),
   dialogue: z.string().describe("One short savage roast dialogue line"),
   damage: z
     .number()

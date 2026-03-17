@@ -7,18 +7,13 @@ import {
   timestamp,
   index,
 } from "drizzle-orm/pg-core";
-import type { ManifestType } from "~/lib/ai/pipeline";
-import type { PrepareVideoPropsType } from "~/lib/video/prepareVideoProps";
-import type { RoastBattleSchemaType } from "~/lib/schemas/roast-battle";
+import type { LiveStateType } from "~/lib/pipeline/createEmptyPreviewState";
+import type { RoastBattleMetadataSchemaType } from "~/lib/schemas/roast-battle-split";
 
 export const createTable = pgTableCreator((name) => `${name}`);
 export const jobStatus = [
   "queued",
-  "generating_script",
-  "script_generated",
-  "generating_assets",
-  "saving_manifest",
-  "transforming_props",
+  "generating",
   "complete",
   "failed",
 ] as const;
@@ -35,14 +30,9 @@ export const jobsTable = createTable("jobs", {
   userId: text("user_id").notNull(),
   prompt: text("prompt").notNull(),
   jobStatus: text("job_status").$type<JobStatusType>().notNull(),
-  script: jsonb("script").$type<RoastBattleSchemaType>(),
   assetReferences: jsonb("asset_references").$type<AssetReferences>(),
-  manifest: jsonb("manifest").$type<ManifestType>(),
-  videoProps: jsonb("video_props").$type<PrepareVideoPropsType>(),
-  thumbnailUrl: jsonb("thumbnail_url").$type<{
-    fileName: string;
-    publicUrl: string;
-  }>(),
+  videoManifest: jsonb("videoManifest").$type<LiveStateType>(),
+  metaData: jsonb("meta_data").$type<RoastBattleMetadataSchemaType>(),
   videoUrl: text("video_url"),
   error: text("error"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

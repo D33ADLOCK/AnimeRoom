@@ -22,6 +22,11 @@ export const createEmptyPreviewState = (): PreviewUpdateEvent => ({
   data: {
     version: 1,
     totalDurationFrames: 0,
+    meta: {
+      battleTitle: "",
+      shortSubtitle: "",
+      thumbnailUrl: undefined,
+    },
     common: createCommonPreviewAssets(),
     announcer: {
       ready: false,

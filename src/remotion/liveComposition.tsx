@@ -7,6 +7,24 @@ import BattleRound from "./scenes/BattleRound";
 export default function LiveComposition({ props }: { props: LiveStateType }) {
   const { announcer, characterStats, rounds, common } = props.data;
 
+  // Calculate health dynamically from accumulated damage
+  const readyRounds = rounds.filter((round) => round.ready);
+  let char1Health = 100;
+  let char2Health = 100;
+
+  const roundHealthData = readyRounds.map((round) => {
+    // The attacker deals damage to the opponent
+    if (round.attackingCharacter === "character1") {
+      const startingHealth = char2Health;
+      char2Health = Math.max(0, char2Health - round.damage);
+      return { chipfrom: startingHealth, percentage: char2Health };
+    } else {
+      const startingHealth = char1Health;
+      char1Health = Math.max(0, char1Health - round.damage);
+      return { chipfrom: startingHealth, percentage: char1Health };
+    }
+  });
+
   return (
     <AbsoluteFill
       style={{
@@ -61,30 +79,31 @@ export default function LiveComposition({ props }: { props: LiveStateType }) {
         )}
 
         {/* ─── Battle Rounds ─── */}
-        {rounds
-          .filter((round) => round.ready)
-          .map((round) => (
-            <Series.Sequence
-              key={`round-${round.roundIndex}`}
-              durationInFrames={round.durationFrames}
-            >
-              <BattleRound
-                background={common.backgroundImageUrl}
-                characterImage={round.attackerImage!}
-                profileImage={round.opponentProfile!}
-                audio={round.dialogueAudio!}
-                name={round.opponentName}
-                chipfrom={round.startingHealth}
-                percentage={round.endingHealth}
-                chipStartFrame={round.durationFrames - 30}
-                side={
-                  round.attackingCharacter === "character1" ? "right" : "left"
-                }
-                caption={round.dialogueText}
-                skillIcons={common.skillIcons}
-              />
-            </Series.Sequence>
-          ))}
+        {readyRounds.map((round, index) => (
+          <Series.Sequence
+            key={`round-${round.roundIndex}`}
+            durationInFrames={round.durationFrames}
+          >
+            <BattleRound
+              background={common.backgroundImageUrl}
+              characterImage={round.attackerImage!}
+              profileImage={round.opponentProfile!}
+              audio={round.dialogueAudio!}
+              name={
+                round.attackingCharacter === "character2"
+                  ? characterStats.character1.name
+                  : characterStats.character2.name
+              }
+              chipfrom={roundHealthData[index]!.chipfrom}
+              percentage={roundHealthData[index]!.percentage}
+              chipStartFrame={round.durationFrames - 30}
+              side={
+                round.attackingCharacter === "character1" ? "right" : "left"
+              }
+              skillIcons={common.skillIcons}
+            />
+          </Series.Sequence>
+        ))}
       </Series>
     </AbsoluteFill>
   );

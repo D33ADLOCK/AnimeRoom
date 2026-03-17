@@ -15,7 +15,7 @@ export default function BattleRound({
   percentage = 83,
   chipStartFrame = 90,
   side = "left",
-  caption = "Again this is just sample",
+  // caption = "Again this is just sample",
   skillIcons,
 }: {
   background: string;
@@ -27,7 +27,7 @@ export default function BattleRound({
   percentage?: number;
   chipStartFrame?: number;
   side?: "left" | "right";
-  caption?: string;
+  // caption?: string;
   skillIcons: string[];
 }) {
   const { width, height, fps } = useVideoConfig();
@@ -71,7 +71,7 @@ export default function BattleRound({
       <Background background={background} width={width} height={height} />
       <Audio src={audio} />
 
-      <Caption caption={caption} />
+      {/* <Caption caption={caption} /> */}
 
       <div className="absolute top-[20%] left-0 flex h-[70%] w-full flex-col gap-4">
         <EgoHudBar

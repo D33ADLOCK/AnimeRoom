@@ -70,17 +70,10 @@ HARD REQUIREMENTS:
 ROUND RULES:
 - Each round must include:
   - attacker ("character1" or "character2")
-  - attackerName (the attacker's character name)
-  - opponentName (the opponent's character name)
   - dialogue
   - damage
   - attackerImagePrompt
   - opponentImagePrompt
-
-CHARACTER NAME RULES:
-- Come up with two distinct, funny character names for this scenario.
-- Use the SAME two names consistently across ALL 6 rounds.
-- character1 is always the same person, character2 is always the same person.
 
 DIALOGUE RULES:
 - Keep each dialogue short: one sentence.
@@ -108,7 +101,6 @@ OPPONENT IMAGE PROMPT RULES:
 - DEFAULT STYLE: cute / chibi anime form unless specified otherwise.
 - IMPORTANT: characters must always be fully clothed, properly dressed, and safe for work.
 - Include pose, expression, and clothing details.
-- Include: "strictly match the art style of the reference image".
 
 FLOW RULES:
 - The 6 rounds should feel like a sequence, not random disconnected lines.
