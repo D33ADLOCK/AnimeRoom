@@ -2,13 +2,21 @@ import { AbsoluteFill, Sequence } from "remotion";
 import Introduction from "./scenes/Introduction";
 import CharacterStats from "./scenes/CharacterStats";
 import BattleRound from "./scenes/BattleRound";
-import type { PrepareVideoPropsType } from "./prepareVideoProps";
+import type { PrepareVideoPropsType } from "../lib/video/prepareVideoProps";
 // TODO: These will come from the manifest props once the full pipeline is wired up.
 // For now, using hardcoded R2 URLs as placeholders.
 
 export type MyCompositionProps = PrepareVideoPropsType;
 
 export const MyComposition = (props: MyCompositionProps) => {
+  const normalizeSkills = (
+    skills: Array<{ name: string; color: string; desc: string; letter?: string }>,
+  ) =>
+    skills.map((skill) => ({
+      ...skill,
+      letter: skill.letter ?? skill.name.charAt(0).toUpperCase(),
+    }));
+
   // ── Common assets (will come from manifest.common) ──
   const bgImage = props.common.background;
   const announcerIntro = props.common.announcerImage;
@@ -19,8 +27,12 @@ export const MyComposition = (props: MyCompositionProps) => {
   const secondCharacterside = props.character.character2.angles.side.image;
 
   // Skills data
-  const firstCharacterSkills = props.character.character1.details.skills;
-  const secondCharacterSkills = props.character.character2.details.skills;
+  const firstCharacterSkills = normalizeSkills(
+    props.character.character1.details.skills,
+  );
+  const secondCharacterSkills = normalizeSkills(
+    props.character.character2.details.skills,
+  );
 
   // Data references to keep JSX clean
   const char1 = props.character.character1.details;
@@ -34,8 +46,6 @@ export const MyComposition = (props: MyCompositionProps) => {
   );
 
   const STATS_DURATION = 90;
-  const CHIP_FRAME = 210; // TODO: Needs to be dynamic based on when they actually speak
-
   const statsEnd = INTRO_END + STATS_DURATION * 2;
 
   return (
@@ -85,18 +95,20 @@ export const MyComposition = (props: MyCompositionProps) => {
 
       {/* ─── Dynamic Battle Rounds ─── */}
       {rounds.map((round, index) => {
+        const currentRoundMeta = props.audioDuration.roundsMeta[index] ?? 0;
         // Find how many frames THIS specific audio round takes (duration in sec * 30 fps)
         const roundDurationFrames = Math.max(
           1,
-          Math.ceil(props.audioDuration.roundsMeta[index] * 30),
+          Math.ceil(currentRoundMeta * 30),
         );
 
         // Calculate the exact start frame by adding up all previous round durations
         let sequenceStart = statsEnd;
         for (let i = 0; i < index; i++) {
+          const previousRoundMeta = props.audioDuration.roundsMeta[i] ?? 0;
           sequenceStart += Math.max(
             1,
-            Math.ceil(props.audioDuration.roundsMeta[i] * 30),
+            Math.ceil(previousRoundMeta * 30),
           );
         }
 

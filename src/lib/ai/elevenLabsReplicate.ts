@@ -1,5 +1,5 @@
 import Replicate, { type FileOutput } from "replicate";
-import type { ELEVENLABS_FLASH_VOICE } from "../constant";
+import type { ELEVENLABS_FLASH_VOICE_TYPE } from "../constant";
 
 const ELEVENLABS_FLASH = "elevenlabs/flash-v2.5";
 
@@ -9,7 +9,7 @@ const replicate = new Replicate({
 
 export async function genAudioFast(
   text: string,
-  voice: typeof ELEVENLABS_FLASH_VOICE,
+  voice: ELEVENLABS_FLASH_VOICE_TYPE,
 ) {
   const input = {
     speed: 1,

@@ -1,5 +1,4 @@
 import {
-  Config,
   interpolate,
   spring,
   useCurrentFrame,

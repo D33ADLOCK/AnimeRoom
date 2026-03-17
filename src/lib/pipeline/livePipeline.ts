@@ -221,11 +221,11 @@ const generateRoundBundle = async ({
   const voiceRef = [...ELEVENLABS_FLASH_VOICE];
 
   const voiceIndex = Math.floor(Math.random() * voiceRef.length);
-  const character1Voice = voiceRef[voiceIndex];
+  const character1Voice = voiceRef[voiceIndex]!;
 
-  voiceRef.splice(voiceIndex, 0);
+  voiceRef.splice(voiceIndex, 1);
 
-  const character2Voice = voiceRef[Math.floor(Math.random() * voiceRef.length)];
+  const character2Voice = voiceRef[Math.floor(Math.random() * voiceRef.length)]!;
 
   for await (const round of roundScript) {
     const voiceRef =

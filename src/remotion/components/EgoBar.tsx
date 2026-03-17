@@ -18,8 +18,8 @@ export default function EgoHudBar({
   chipStartFrame: number;
 }) {
   const frame = useCurrentFrame();
-
-  let pct = Math.max(0, Math.min(100, chipfrom));
+  const pct = Math.max(0, Math.min(100, chipfrom));
+  const easeOutCubic = Easing.out((t) => Easing.cubic(t));
 
   // pct = frame >= chipStartFrame ? percentage : pct;
 
@@ -34,14 +34,14 @@ export default function EgoHudBar({
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
-      easing: Easing.out(Easing.cubic),
+      easing: easeOutCubic,
     },
   );
 
   const fillUp = interpolate(frame, [0, 30], [0, pct], {
     extrapolateRight: "clamp",
     extrapolateLeft: "clamp",
-    easing: Easing.out(Easing.cubic),
+    easing: easeOutCubic,
   });
 
   // Red chip bar — stays at old HP then drains after a delay
@@ -52,7 +52,7 @@ export default function EgoHudBar({
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
-      easing: Easing.out(Easing.cubic),
+      easing: easeOutCubic,
     },
   );
 

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { api } from "~/trpc/server";
 import { Video, Play } from "lucide-react";
@@ -76,7 +77,7 @@ export default async function Page() {
             No Videos Yet
           </h2>
           <p className="mb-6 max-w-md text-base font-bold text-[var(--color-nb-text)]/80 sm:mb-8 sm:text-lg">
-            You haven't generated any roast battles yet. Time to spark some
+            You haven&apos;t generated any roast battles yet. Time to spark some
             chaos!
           </p>
           <Link
@@ -100,10 +101,12 @@ export default async function Page() {
                 {/* Thumbnail Container (9:16 aspect ratio for vertical video) */}
                 <div className="relative aspect-[9/16] w-full overflow-hidden border-b-[2px] border-[var(--color-nb-border)] bg-[var(--color-nb-blue)] sm:border-b-[3px]">
                   {v.metaData?.thumbnailUrl ? (
-                    <img
+                    <Image
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       src={v.metaData?.thumbnailUrl}
                       alt={v.metaData?.battleTitle ?? "Video thumbnail"}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
                     />
                   ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center bg-gray-200">
@@ -129,7 +132,7 @@ export default async function Page() {
                   <div>
                     <div className="mb-2 flex flex-wrap items-center gap-1 sm:mb-3 sm:gap-2">
                       <span
-                        className={`nb-border ${theme.tagBg} px-1.5 py-0.5 text-[10px] font-black tracking-wider text-black uppercase sm:px-2 sm:text-xs`}
+                        className={`nb-border ${theme?.tagBg} px-1.5 py-0.5 text-[10px] font-black tracking-wider text-black uppercase sm:px-2 sm:text-xs`}
                       >
                         Complete
                       </span>

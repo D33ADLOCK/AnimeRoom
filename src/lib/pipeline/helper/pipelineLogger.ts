@@ -13,14 +13,14 @@ export class PipelineLogger {
   }
 
   endTask(name: string) {
-    if (this.events[name]?.start) {
-      this.events[name].end = Date.now();
-      this.events[name].durationMs =
-        this.events[name].end! - this.events[name].start!;
+    const event = this.events[name];
+    if (event?.start) {
+      event.end = Date.now();
+      event.durationMs = event.end - event.start;
     }
   }
 
-  printReport(jobId: string = "unknown") {
+  printReport(jobId = "unknown") {
     const totalTime = Date.now() - this.startTime;
     console.log("\n=======================================================");
     console.log("               🚀 PIPELINE PERFORMANCE LOG              ");

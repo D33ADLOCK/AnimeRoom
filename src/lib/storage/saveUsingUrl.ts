@@ -20,7 +20,7 @@ export async function saveToR2UsingUrl({
   if (!res.ok)
     throw new Error(`Failed to fetch file: ${res.status} ${res.statusText}`);
 
-  let headerType = res.headers.get("content-type");
+  const headerType = res.headers.get("content-type");
 
   console.log(res.ok);
 

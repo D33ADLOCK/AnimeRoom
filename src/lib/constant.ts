@@ -36,6 +36,9 @@ export const ELEVENLABS_FLASH_VOICE = [
   "Grimblewood",
 ] as const;
 
+export type ELEVENLABS_FLASH_VOICE_TYPE =
+  (typeof ELEVENLABS_FLASH_VOICE)[number];
+
 export const ALLOWED_SIZE = {
   voice_reference: 10 * 1024 * 1024,
   image_reference: 10 * 1024 * 1024,

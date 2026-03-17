@@ -1,4 +1,4 @@
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { spring, useCurrentFrame, useVideoConfig } from "remotion";
 
 const stats = [
   { label: "Dilusional", value: 46, color: "#FF3D00" },
@@ -94,7 +94,7 @@ function StatRow({
       <div className="relative h-10 w-full overflow-hidden rounded-xl bg-black/50 border-2 border-white/10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]">
         {/* Fill Segment Markers (Subtle vertical lines every 10%) */}
         <div className="absolute inset-0 flex justify-between px-0 opacity-20 pointer-events-none z-10">
-          {[...Array(11)].map((_, i) => (
+          {Array.from({ length: 11 }).map((_, i) => (
             <div key={i} className="w-[1px] h-full bg-white/40" />
           ))}
         </div>
@@ -124,6 +124,7 @@ function StatsDetails() {
     <div className="flex flex-col gap-10 w-full py-4">
       {stats.map((stat, i) => (
         <StatRow
+          key={`${stat.label}-${i}`}
           label={stat.label}
           color={stat.color}
           value={stat.value}
