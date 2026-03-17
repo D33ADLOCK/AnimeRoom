@@ -13,12 +13,16 @@ export async function saveToR2UsingUrl({
 
   const publicUrl = `${baseUrl}/${fileName}`;
 
+  console.log("R2 Called");
+
   const res = await fetch(url);
 
   if (!res.ok)
     throw new Error(`Failed to fetch file: ${res.status} ${res.statusText}`);
 
   let headerType = res.headers.get("content-type");
+
+  console.log(res.ok);
 
   const getContentType = (key: string) => {
     if (key.endsWith(".mp3")) return "audio/mpeg";
@@ -28,6 +32,7 @@ export async function saveToR2UsingUrl({
   };
 
   const contentType = headerType ?? getContentType(fileName);
+  console.log("Content type: ", contentType);
 
   const arrayBuffer = await res.arrayBuffer();
   const body = Buffer.from(arrayBuffer);
@@ -40,6 +45,8 @@ export async function saveToR2UsingUrl({
       ContentType: contentType,
     }),
   );
+
+  console.log("status.ok");
 
   return publicUrl;
 }

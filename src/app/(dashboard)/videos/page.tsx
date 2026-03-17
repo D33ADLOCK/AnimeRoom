@@ -99,11 +99,11 @@ export default async function Page() {
               >
                 {/* Thumbnail Container (9:16 aspect ratio for vertical video) */}
                 <div className="relative aspect-[9/16] w-full overflow-hidden border-b-[2px] border-[var(--color-nb-border)] bg-[var(--color-nb-blue)] sm:border-b-[3px]">
-                  {v.thumbnailUrl?.publicUrl ? (
+                  {v.metaData?.thumbnailUrl ? (
                     <img
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      src={v.thumbnailUrl.publicUrl}
-                      alt={v.thumbnailUrl.fileName ?? "Video thumbnail"}
+                      src={v.metaData?.thumbnailUrl}
+                      alt={v.metaData?.battleTitle ?? "Video thumbnail"}
                     />
                   ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center bg-gray-200">
@@ -124,7 +124,7 @@ export default async function Page() {
 
                 {/* Card Content Footer */}
                 <div
-                  className={`flex flex-1 flex-col justify-between ${theme.cardBg} border-t-[3px] border-[var(--color-nb-border)] p-3 sm:p-5`}
+                  className={`flex flex-1 flex-col justify-between ${theme?.cardBg} border-t-[3px] border-[var(--color-nb-border)] p-3 sm:p-5`}
                 >
                   <div>
                     <div className="mb-2 flex flex-wrap items-center gap-1 sm:mb-3 sm:gap-2">
@@ -142,8 +142,8 @@ export default async function Page() {
                       </span>
                     </div>
 
-                    <h3 className="line-clamp-1 text-base font-black uppercase sm:text-xl">
-                      Roast Battle
+                    <h3 className="line-clamp-1 text-base font-black uppercase sm:text-sm">
+                      {v.metaData?.battleTitle}
                     </h3>
                   </div>
                 </div>

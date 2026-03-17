@@ -26,6 +26,7 @@ import { saveToR2UsingUrl } from "../storage/saveUsingUrl";
 import { db } from "~/server/db";
 import { jobsTable } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
+import { realtime } from "../redis/realtime";
 
 export async function runLivePipeline(
   jobId: string,
@@ -39,86 +40,88 @@ export async function runLivePipeline(
 
   const r2Promise: Promise<{ key: string; url: string }>[] = [];
 
-  // Run in background and print logger report when both complete
-  Promise.allSettled([
-    generateCharacterBundle({ prompt, liveState, logger, r2Promise, jobId }),
-    generateRoundBundle({ prompt, liveState, logger, r2Promise, jobId }),
-    generateMeta({ prompt, liveState, logger, r2Promise, jobId }),
-  ])
-    .then(async () => {
-      // All assets generated — now wait for R2 uploads to finish
-      const r2Results = await Promise.all(r2Promise);
+  try {
+    // Run all three generators in parallel
+    await Promise.all([
+      generateCharacterBundle({ prompt, liveState, logger, r2Promise, jobId }),
+      generateRoundBundle({ prompt, liveState, logger, r2Promise, jobId }),
+      generateMeta({ prompt, liveState, logger, r2Promise, jobId }),
+    ]);
 
-      // Build a map of key → permanent R2 URL
-      const r2Map = new Map(r2Results.map(({ key, url }) => [key, url]));
+    // All assets generated — now wait for R2 uploads to finish
+    console.log("R2Promises called");
 
-      // Replace temp URLs with permanent R2 URLs in liveState
-      await stateUpdateAndEmit(liveState, (state) => {
-        // Meta thumbnail
-        if (r2Map.has("meta-thumbnail")) {
-          state.data.meta.thumbnailUrl = r2Map.get("meta-thumbnail")!;
+    const r2Results = await Promise.all(r2Promise);
+
+    // Build a map of key → permanent R2 URL
+    const r2Map = new Map(r2Results.map(({ key, url }) => [key, url]));
+
+    // Replace temp URLs with permanent R2 URLs in liveState
+    await stateUpdateAndEmit(liveState, (state) => {
+      // Meta thumbnail
+      if (r2Map.has("meta-thumbnail")) {
+        state.data.meta.thumbnailUrl = r2Map.get("meta-thumbnail")!;
+      }
+
+      // Characters
+      const char1 = state.data.characterStats.character1;
+      if (r2Map.has("characterBundle-character1")) {
+        char1.imageUrl = r2Map.get("characterBundle-character1")!;
+      }
+      const char2 = state.data.characterStats.character2;
+      if (r2Map.has("characterBundle-character2")) {
+        char2.imageUrl = r2Map.get("characterBundle-character2")!;
+      }
+
+      // Rounds
+      for (let i = 0; i < state.data.rounds.length; i++) {
+        const round = state.data.rounds[i]!;
+        if (r2Map.has(`round-${i}-attacker`)) {
+          round.attackerImage = r2Map.get(`round-${i}-attacker`)!;
         }
-
-        // Characters
-        const char1 = state.data.characterStats.character1;
-        if (r2Map.has("characterBundle-character1")) {
-          char1.imageUrl = r2Map.get("characterBundle-character1")!;
+        if (r2Map.has(`round-${i}-opponent`)) {
+          round.opponentProfile = r2Map.get(`round-${i}-opponent`)!;
         }
-        const char2 = state.data.characterStats.character2;
-        if (r2Map.has("characterBundle-character2")) {
-          char2.imageUrl = r2Map.get("characterBundle-character2")!;
+        if (r2Map.has(`round-${i}-audio`)) {
+          round.dialogueAudio = r2Map.get(`round-${i}-audio`)!;
         }
-
-        // Rounds
-        for (let i = 0; i < state.data.rounds.length; i++) {
-          const round = state.data.rounds[i]!;
-          if (r2Map.has(`round-${i}-attacker`)) {
-            round.attackerImage = r2Map.get(`round-${i}-attacker`)!;
-          }
-          if (r2Map.has(`round-${i}-opponent`)) {
-            round.opponentProfile = r2Map.get(`round-${i}-opponent`)!;
-          }
-          if (r2Map.has(`round-${i}-audio`)) {
-            round.dialogueAudio = r2Map.get(`round-${i}-audio`)!;
-          }
-        }
-      });
-
-      const [result] = await db
-        .update(jobsTable)
-        .set({
-          videoManifest: liveState,
-          metaData: {
-            battleTitle: liveState.data.meta.battleTitle,
-            shortSubtitle: liveState.data.meta.shortSubtitle,
-            thumbnailPrompt: liveState.data.meta.thumbnailUrl!,
-          },
-          jobStatus: "complete",
-        })
-        .where(and(eq(jobsTable.id, jobId), eq(jobsTable.userId, userId)))
-        .returning({ jobs: jobsTable.id });
-
-      if (!result) throw new Error("Failed to save to db");
-
-      logger.printReport(jobId);
-    })
-
-    .catch((err) => {
-      console.error("Pipeline crashed:", err);
-      logger.printReport(jobId);
+      }
     });
+
+    const [result] = await db
+      .update(jobsTable)
+      .set({
+        videoManifest: liveState,
+        metaData: {
+          battleTitle: liveState.data.meta.battleTitle,
+          shortSubtitle: liveState.data.meta.shortSubtitle,
+          thumbnailUrl: liveState.data.meta.thumbnailUrl!,
+        },
+        jobStatus: "complete",
+      })
+      .where(and(eq(jobsTable.id, jobId), eq(jobsTable.userId, userId)))
+      .returning({ jobs: jobsTable.id });
+
+    if (!result) throw new Error("Failed to save to db");
+
+    await realtime.emit("pipeline-events", {
+      type: "completed",
+      jobId,
+      message: "Video Pipeline Completed",
+    });
+
+    logger.printReport(jobId);
+  } catch (err) {
+    console.error("Pipeline crashed:", err);
+    logger.printReport(jobId);
+
+    await realtime.emit("pipeline-events", {
+      type: "error",
+      code: "ASSET_PIPELINE_CRASH",
+      message: "Something went wrong generating your video. Please try again.",
+    });
+  }
 }
-
-// const generateMeta = async ({ prompt }: { prompt: string }) => {
-//   const metaScript = await generateScript(
-//     getMetadataPrompt(prompt),
-//     RoastBattleMetadataSchema,
-//   );
-
-//   if (!metaScript) throw new Error("Failed to generate Script");
-
-//   const thumbnainUrl = await genImageFast(metaScript.thumbnailPrompt);
-// };
 
 const generateCharacterBundle = async ({
   prompt,
@@ -170,11 +173,11 @@ const generateCharacterBundle = async ({
     });
     logger.endTask(`${slotLogName} State Emitted`);
 
-    const fileName = path.posix.join(jobId, "image", item.name, "side");
+    const fileName = path.posix.join(jobId, "image", item.name, "side.png");
 
     r2Promise.push(
       saveToR2UsingUrl({
-        url: characterSideImage,
+        url: characterSideImage.url.toString(),
         fileName: fileName,
       }).then((r2Url) => ({ key: `characterBundle-${item.slot}`, url: r2Url })),
     );

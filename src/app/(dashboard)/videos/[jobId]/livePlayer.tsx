@@ -6,10 +6,19 @@ import { LivePreview } from "./_components/live/livePreview";
 import { useRealtime } from "~/lib/redis/realtime-client";
 import LiveEditor from "./_components/live/liveEditor";
 
-export default function LivePlayer() {
-  const [liveState, setLiveState] = useState<null | LiveStateType>(null);
+export default function LivePlayer({
+  initialLiveState,
+  isComplete,
+}: {
+  initialLiveState: LiveStateType;
+  isComplete: boolean;
+}) {
+  const [liveState, setLiveState] = useState<null | LiveStateType>(
+    initialLiveState,
+  );
 
   useRealtime({
+    enabled: !isComplete,
     events: ["pipeline-events"],
     onData: ({ event, data }) => {
       console.log(`Received ${event}:`, data);

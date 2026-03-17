@@ -1,6 +1,6 @@
 import { api } from "~/trpc/server";
-import { VideoPlayer } from "./videoPlayer";
 import LivePlayer from "./livePlayer";
+import { createEmptyPreviewState } from "~/lib/pipeline/createEmptyPreviewState";
 
 export default async function Page({
   params,
@@ -9,13 +9,13 @@ export default async function Page({
 }) {
   const { jobId } = await params;
 
-  const videoProps = await api.job.getManifest({ jobId });
+  const videoManifest = await api.job.getManifest({ jobId });
 
-  const isJobCompleted = videoProps != null;
+  const isCompleted = !!videoManifest;
 
-  return isJobCompleted ? (
-    <VideoPlayer jobId={jobId} videoProps={videoProps.videoProps!} />
-  ) : (
-    <LivePlayer />
-  );
+  const emptyManifest = createEmptyPreviewState();
+
+  const vm = videoManifest ?? emptyManifest;
+
+  return <LivePlayer initialLiveState={vm} isComplete={isCompleted} />;
 }

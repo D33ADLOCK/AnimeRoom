@@ -16,9 +16,7 @@ export default function CreatePage() {
 
   type formType = z.infer<typeof userPromptSchema>;
 
-  const { mutateAsync } = api.job.createJob.useMutation();
-  const { mutateAsync: startLivePipeline } =
-    api.job.createLivePipeline.useMutation();
+  const { mutateAsync: startJob } = api.job.createJob.useMutation();
 
   const router = useRouter();
 
@@ -37,14 +35,9 @@ export default function CreatePage() {
   const userPrompt = watch("prompt");
 
   const onSubmit = async (values: formType) => {
-    const [result] = await mutateAsync({ prompt: values.prompt });
+    const [result] = await startJob({ prompt: values.prompt });
 
     if (!result) throw new Error("Job Creating failed");
-
-    void startLivePipeline({
-      jobId: result.jobId,
-      prompt: values.prompt,
-    });
 
     router.push(`/videos/${result.jobId}`);
 

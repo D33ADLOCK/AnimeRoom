@@ -7,6 +7,7 @@ import {
   timestamp,
   index,
 } from "drizzle-orm/pg-core";
+import type z from "zod";
 import type { LiveStateType } from "~/lib/pipeline/createEmptyPreviewState";
 import type { RoastBattleMetadataSchemaType } from "~/lib/schemas/roast-battle-split";
 
@@ -32,7 +33,11 @@ export const jobsTable = createTable("jobs", {
   jobStatus: text("job_status").$type<JobStatusType>().notNull(),
   assetReferences: jsonb("asset_references").$type<AssetReferences>(),
   videoManifest: jsonb("videoManifest").$type<LiveStateType>(),
-  metaData: jsonb("meta_data").$type<RoastBattleMetadataSchemaType>(),
+  metaData: jsonb("meta_data").$type<{
+    battleTitle: string;
+    shortSubtitle: string;
+    thumbnailUrl: string;
+  }>(),
   videoUrl: text("video_url"),
   error: text("error"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
