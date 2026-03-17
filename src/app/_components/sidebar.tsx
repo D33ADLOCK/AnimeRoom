@@ -12,7 +12,6 @@ import {
   Smile,
   Sparkles,
   Trash2,
-  User2,
   Video,
 } from "lucide-react";
 import Image from "next/image";
@@ -39,7 +38,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarSeparator,
-  SidebarTrigger,
 } from "~/components/ui/sidebar";
 
 /* ─── Menu data ─── */

@@ -1,6 +1,5 @@
 import { generateAudiosWithRetry } from "./audio";
 import { processImagesWithRetry } from "./images";
-import { getTempUrl } from "../storage/r2";
 import type { RoastBattleSchemaType } from "../schemas/roast-battle";
 import path from "path";
 import { genImageFast } from "./imageReplicate";

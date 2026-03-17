@@ -1,7 +1,7 @@
 import React from "react";
 import { Img } from "remotion";
 
-export default function ({
+export default function CharacterImage({
   image,
   className = "w-full h-auto object-contain overflow-hidden",
   style = {},

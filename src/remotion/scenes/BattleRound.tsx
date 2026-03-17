@@ -1,6 +1,5 @@
 import { Audio, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import Background from "../components/Background";
-import Caption from "../components/Caption";
 import EgoHudBar from "../components/EgoBar";
 import CharacterImage from "../components/CharacterImage";
 import BattleSkillIcon from "../components/BattleSkillIcon";

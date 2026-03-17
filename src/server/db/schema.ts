@@ -7,9 +7,7 @@ import {
   timestamp,
   index,
 } from "drizzle-orm/pg-core";
-import type z from "zod";
 import type { LiveStateType } from "~/lib/pipeline/createEmptyPreviewState";
-import type { RoastBattleMetadataSchemaType } from "~/lib/schemas/roast-battle-split";
 
 export const createTable = pgTableCreator((name) => `${name}`);
 export const jobStatus = [

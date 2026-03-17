@@ -30,4 +30,4 @@ async function main() {
   console.log("Image trim complete!");
 }
 
-main();
+void main();

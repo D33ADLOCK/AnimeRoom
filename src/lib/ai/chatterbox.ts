@@ -2,9 +2,6 @@ import Replicate, { type FileOutput } from "replicate";
 
 const ELEVENLABS_FLASH = "elevenlabs/flash-v2.5";
 
-const CHATTERBOX_MODEL =
-  "resemble-ai/chatterbox-multilingual:9cfba4c265e685f840612be835424f8c33bdee685d7466ece7684b0d9d4c0b1c";
-
 const replicate = new Replicate({
   auth: process.env.REPLICATE_IMAGE_API_TOKEN,
 });

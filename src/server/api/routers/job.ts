@@ -1,28 +1,9 @@
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { randomUUID } from "crypto";
-import { generateScript } from "~/lib/ai/genScript";
-import { jobsTable, usersAssetsTable } from "~/server/db/schema";
-import { runPipeline, type PipelineReferences } from "~/lib/ai/pipeline";
-import { getPresignedReadUrl } from "~/lib/storage/genPresignedUrl";
-import {
-  RoastBattleSchema,
-  type RoastBattleSchemaType,
-} from "~/lib/schemas/roast-battle";
-import { and, eq } from "drizzle-orm";
-import {
-  prepareVideoProps,
-  type PrepareVideoPropsType,
-} from "~/lib/video/prepareVideoProps";
+import { jobsTable } from "~/server/db/schema";
 import { generateAndSaveAudio } from "~/lib/ai/audio";
-import { getTempUrl } from "~/lib/storage/r2";
-import { genImage, genImageFast } from "~/lib/ai/imageReplicate";
-import { saveStreamToR2 } from "~/lib/storage/upload";
-import path from "path";
-import { TRPCError } from "@trpc/server";
 import { runLivePipeline } from "~/lib/pipeline/livePipeline";
-
-const VideoPropsInput: z.ZodType<PrepareVideoPropsType> = z.any();
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
