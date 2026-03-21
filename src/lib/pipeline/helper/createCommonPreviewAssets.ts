@@ -1,4 +1,4 @@
-import type { LivePreviewStateSchema } from "../realtime/job-event";
+import type { LivePreviewStateSchema } from "../../realtime/job-event";
 
 const R2_BASE = process.env.R2_PUBLIC_BASE_URL!;
 

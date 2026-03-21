@@ -1,0 +1,133 @@
+import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
+import type { inngest } from "./client";
+import type { GetStepTools } from "inngest";
+import { streamStructuredArray } from "~/lib/ai/scriptStreaming";
+import { getRoundsPrompt } from "~/lib/utils/userPrompt";
+import { RoundSchema } from "~/lib/schemas/roast-battle-split";
+import { stateUpdateAndEmit } from "~/lib/pipeline/helper/stateUpdateAndEmit";
+import { ELEVENLABS_FLASH_VOICE } from "~/lib/constant";
+import { generateRoundAssets } from "~/lib/pipeline/generateRoundAssets";
+import { saveToR2UsingUrl } from "~/lib/storage/saveUsingUrl";
+import path from "path";
+
+type Step = GetStepTools<typeof inngest>;
+
+export const roundBundle = async ({
+  prompt,
+  step,
+  liveState,
+  r2Promise,
+  jobId,
+}: {
+  prompt: string;
+  step: Step;
+  liveState: LiveStateType;
+  r2Promise: Promise<{ key: string; url: string }>[];
+  jobId: string;
+}) => {
+  const { character1Voice, character2Voice } = await step.run(
+    "assign-voices",
+    async () => {
+      const character1Index = Math.floor(
+        Math.random() * ELEVENLABS_FLASH_VOICE.length,
+      );
+
+      let character2Index = Math.floor(
+        Math.random() * ELEVENLABS_FLASH_VOICE.length,
+      );
+
+      while (character2Index === character1Index) {
+        character2Index = Math.floor(
+          Math.random() * ELEVENLABS_FLASH_VOICE.length,
+        );
+      }
+
+      const character1Voice = ELEVENLABS_FLASH_VOICE[character1Index]!;
+      const character2Voice = ELEVENLABS_FLASH_VOICE[character2Index]!;
+
+      return { character1Voice, character2Voice };
+    },
+  );
+
+  const roundResults = await step.run("generate-rounds", async () => {
+    const roundScript = streamStructuredArray({
+      prompt: getRoundsPrompt(prompt),
+      schema: RoundSchema,
+    });
+
+    let roundIndex = 0;
+
+    for await (const round of roundScript) {
+      const voice =
+        round.attacker === "character1" ? character1Voice : character2Voice;
+      const {
+        attackerImageUrl,
+        opponentImageUrl,
+        audioUrl,
+        audioDurationFrames,
+      } = await generateRoundAssets(round, voice);
+
+      // Real-time emission — browser sees rounds appear during first execution
+      await stateUpdateAndEmit(liveState, (state) => {
+        const slot = state.data.rounds[roundIndex]!;
+        slot.attackingCharacter = round.attacker;
+        slot.attackerImage = attackerImageUrl;
+        slot.opponentProfile = opponentImageUrl;
+        slot.dialogueAudio = audioUrl;
+        slot.dialogueText = round.dialogue;
+        slot.damage = round.damage;
+        slot.durationFrames = audioDurationFrames;
+      });
+
+      roundIndex++;
+    }
+
+    // Return both liveState and round data for R2 — cached on replay
+    return {
+      liveState,
+      rounds: liveState.data.rounds,
+    };
+  });
+
+  // Outside the step — runs on every replay using cached data
+
+  // Restore liveState from cached return (on replay the step body didn't run,
+  // so liveState is still empty — this fills it back in)
+  Object.assign(liveState.data, roundResults.liveState.data);
+
+  // Create R2 upload promises from cached URLs
+  for (let i = 0; i < roundResults.rounds.length; i++) {
+    const round = roundResults.rounds[i]!;
+    if (!round.attackerImage) continue; // skip empty rounds
+
+    r2Promise.push(
+      saveToR2UsingUrl({
+        url: round.attackerImage,
+        fileName: path.posix.join(jobId, "image", `round-${i}-attacker.png`),
+      }).then((r2Url) => ({
+        key: `round-${i}-attacker`,
+        url: r2Url,
+      })),
+    );
+
+    r2Promise.push(
+      saveToR2UsingUrl({
+        url: round.opponentProfile!,
+        fileName: path.posix.join(jobId, "image", `round-${i}-opponent.png`),
+      }).then((r2Url) => ({
+        key: `round-${i}-opponent`,
+        url: r2Url,
+      })),
+    );
+
+    r2Promise.push(
+      saveToR2UsingUrl({
+        url: round.dialogueAudio!,
+        fileName: path.posix.join(jobId, "audio", `round-${i}.mp3`),
+      }).then((r2Url) => ({
+        key: `round-${i}-audio`,
+        url: r2Url,
+      })),
+    );
+  }
+};

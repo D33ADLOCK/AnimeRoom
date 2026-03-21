@@ -1,5 +1,5 @@
 import { realtime } from "~/lib/redis/realtime";
-import type { LiveStateType } from "../createEmptyPreviewState";
+import type { LiveStateType } from "./createEmptyPreviewState";
 
 export function calculateTotalDurationFrames(liveState: LiveStateType): number {
   let total = 0;

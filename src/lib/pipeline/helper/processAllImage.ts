@@ -1,4 +1,4 @@
-import { genImageFast } from "../ai/imageReplicate";
+import { genImageFast } from "../../ai/imageReplicate";
 
 export const processAllImages = async (
   allImageTask: {

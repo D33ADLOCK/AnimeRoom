@@ -2,7 +2,7 @@
 
 import { Player } from "@remotion/player";
 import LiveComposition from "~/remotion/liveComposition";
-import type { LiveStateType } from "~/lib/pipeline/createEmptyPreviewState";
+import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
 
 export function LivePreview({ liveState }: { liveState: LiveStateType }) {
   return (
