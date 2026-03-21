@@ -7,8 +7,8 @@ import { generateScript } from "../ai/genScript";
 import {
   createEmptyPreviewState,
   type LiveStateType,
-} from "./createEmptyPreviewState";
-import { createCommonPreviewAssets } from "./createCommonPreviewAssets";
+} from "./helper/createEmptyPreviewState";
+import { createCommonPreviewAssets } from "./helper/createCommonPreviewAssets";
 import { getAudioDuration } from "../audio/getAudioDuration";
 import { genImageFast } from "../ai/imageReplicate";
 import { stateUpdateAndEmit } from "./helper/stateUpdateAndEmit";
@@ -27,6 +27,8 @@ import { db } from "~/server/db";
 import { jobsTable } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { realtime } from "../redis/realtime";
+import { generateRoundAssets } from "./generateRoundAssets";
+import { generateCharacterAssets } from "./generateCharacterAssets";
 
 export async function runLivePipeline(
   jobId: string,
@@ -128,63 +130,53 @@ const generateCharacterBundle = async ({
   jobId,
   r2Promise,
   liveState,
-  logger,
 }: {
   prompt: string;
   liveState: LiveStateType;
   r2Promise: Promise<{ key: string; url: string }>[];
   jobId: string;
-  logger: PipelineLogger;
 }) => {
-  logger.startTask("Character Streaming Setup");
   const bundleScript = streamStructuredArray({
     prompt: getCharacterBundlePrompt(prompt),
     schema: CharacterBundleItemSchema,
   });
-  logger.endTask("Character Streaming Setup");
 
   for await (const item of bundleScript) {
-    const slotLogName = `Char ${item.slot === "character1" ? "1" : "2"} [${item.name}]`;
-
     // Measure image generation
-    logger.startTask(`${slotLogName} Image Gen`);
-    const characterSideImage = await genImageFast(item.imagePrompt);
-    logger.endTask(`${slotLogName} Image Gen`);
-
-    if (!characterSideImage) throw new Error("Failed to generate Image");
+    const characterImage = await generateCharacterAssets(item.imagePrompt);
 
     if (!liveState.data.announcer.ready) {
-      logger.startTask("Announcer Init & Audio Check");
       await emitAnnouncer({ liveState });
-      logger.endTask("Announcer Init & Audio Check");
     }
 
-    logger.startTask(`${slotLogName} State Emitted`);
     await stateUpdateAndEmit(liveState, (state) => {
       const charSlot = state.data.characterStats[item.slot];
       charSlot.ready = true;
       charSlot.name = item.name;
       charSlot.title = item.title;
-      charSlot.imagePrompt = item.imagePrompt;
-      charSlot.imageUrl = characterSideImage.url.toString(); // URL → string
+      charSlot.imagePrompt = characterImage.prompt;
+      charSlot.imageUrl = characterImage.imageUrl; // URL → string
       charSlot.stats = item.stats;
       charSlot.skills = item.skills;
       charSlot.durationFrames = 90;
     });
-    logger.endTask(`${slotLogName} State Emitted`);
 
     const fileName = path.posix.join(jobId, "image", item.name, "side.png");
 
     r2Promise.push(
       saveToR2UsingUrl({
-        url: characterSideImage.url.toString(),
+        url: characterImage.imageUrl,
         fileName: fileName,
       }).then((r2Url) => ({ key: `characterBundle-${item.slot}`, url: r2Url })),
     );
   }
 };
 
-const emitAnnouncer = async ({ liveState }: { liveState: LiveStateType }) => {
+export const emitAnnouncer = async ({
+  liveState,
+}: {
+  liveState: LiveStateType;
+}) => {
   const commonAssets = createCommonPreviewAssets();
   const announcerDurationInFrames = Math.ceil(
     (await getAudioDuration(commonAssets.announcerAudioUrl)) * 30,
@@ -199,22 +191,18 @@ const emitAnnouncer = async ({ liveState }: { liveState: LiveStateType }) => {
 const generateRoundBundle = async ({
   prompt,
   liveState,
-  logger,
   jobId,
   r2Promise,
 }: {
   prompt: string;
   liveState: LiveStateType;
-  logger: PipelineLogger;
   jobId: string;
   r2Promise: Promise<{ key: string; url: string }>[];
 }) => {
-  logger.startTask("Rounds Streaming Setup");
   const roundScript = streamStructuredArray({
     prompt: getRoundsPrompt(prompt),
     schema: RoundSchema,
   });
-  logger.endTask("Rounds Streaming Setup");
 
   let roundIndex = 0; // Track which round we are on sequentially
 
@@ -225,66 +213,23 @@ const generateRoundBundle = async ({
 
   voiceRef.splice(voiceIndex, 1);
 
-  const character2Voice = voiceRef[Math.floor(Math.random() * voiceRef.length)]!;
+  const character2Voice =
+    voiceRef[Math.floor(Math.random() * voiceRef.length)]!;
 
   for await (const round of roundScript) {
     const voiceRef =
       round.attacker === "character1" ? character1Voice : character2Voice;
 
-    const roundLogName = `Round ${roundIndex + 1}`;
-
-    logger.startTask(`${roundLogName} Generation (Images+Audio)`);
-
-    // Explicitly tracking EACH item inside the Promise.all
-    const attackerPromise = (async () => {
-      logger.startTask(`${roundLogName} attacker image`);
-      const res = await genImageFast(round.attackerImagePrompt);
-      logger.endTask(`${roundLogName} attacker image`);
-      return res;
-    })();
-
-    const opponentPromise = (async () => {
-      logger.startTask(`${roundLogName} opponent image`);
-      const res = await genImageFast(round.opponentImagePrompt);
-      logger.endTask(`${roundLogName} opponent image`);
-      return res;
-    })();
-
-    const audioPromise = (async () => {
-      logger.startTask(`${roundLogName} audio`);
-      const res = await genAudioFast(round.dialogue, voiceRef);
-      logger.endTask(`${roundLogName} audio`);
-      return res;
-    })();
-
-    const [attackerImage, opponentImage, roundAudio] = await Promise.all([
-      attackerPromise,
-      opponentPromise,
-      audioPromise,
-    ]);
-    logger.endTask(`${roundLogName} Generation (Images+Audio)`);
-
-    if (!attackerImage || !opponentImage) throw new Error("Image failed");
-
-    // We need string versions of the URLs (R2/Replicate returns URL objects)
-    const attackerImageUrl = attackerImage.url.toString();
-    const opponentImageUrl = opponentImage.url.toString();
-    const audioUrl = roundAudio.url.toString();
-
-    logger.startTask(`${roundLogName} Audio Duration Fetch`);
-    // Calculate length of the video scene based on the audio length
-    const audioDurationFrames = Math.ceil(
-      (await getAudioDuration(audioUrl)) * 30,
-    );
-    logger.endTask(`${roundLogName} Audio Duration Fetch`);
-
-    // Minimum 3 seconds (90 frames) so the user has time to read short dialogue
-    const finalDurationFrames = Math.max(90, audioDurationFrames);
+    const {
+      attackerImageUrl,
+      opponentImageUrl,
+      audioUrl,
+      audioDurationFrames,
+    } = await generateRoundAssets(round, voiceRef);
 
     const currentRoundIndex = roundIndex;
     roundIndex++; // Increment for the next loop
 
-    logger.startTask(`${roundLogName} State Emitted`);
     await stateUpdateAndEmit(liveState, (state) => {
       const slot = state.data.rounds[currentRoundIndex]!;
       slot.attackingCharacter = round.attacker;
@@ -293,9 +238,8 @@ const generateRoundBundle = async ({
       slot.dialogueAudio = audioUrl;
       slot.dialogueText = round.dialogue;
       slot.damage = round.damage;
-      slot.durationFrames = finalDurationFrames;
+      slot.durationFrames = audioDurationFrames;
     });
-    logger.endTask(`${roundLogName} State Emitted`);
 
     const audioKey = path.posix.join(
       jobId,

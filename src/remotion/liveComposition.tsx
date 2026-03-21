@@ -1,5 +1,5 @@
 import { AbsoluteFill, Series } from "remotion";
-import type { LiveStateType } from "~/lib/pipeline/createEmptyPreviewState";
+import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
 import Introduction from "./scenes/Introduction";
 import CharacterStats from "./scenes/CharacterStats";
 import BattleRound from "./scenes/BattleRound";

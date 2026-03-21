@@ -1,4 +1,4 @@
-import type { PreviewUpdateEvent } from "../realtime/job-event";
+import type { PreviewUpdateEvent } from "../../realtime/job-event";
 import { createCommonPreviewAssets } from "./createCommonPreviewAssets";
 
 const createEmptyRound = (roundIndex: number) => ({

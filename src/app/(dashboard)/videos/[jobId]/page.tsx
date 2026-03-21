@@ -1,6 +1,6 @@
 import { api } from "~/trpc/server";
 import LivePlayer from "./livePlayer";
-import { createEmptyPreviewState } from "~/lib/pipeline/createEmptyPreviewState";
+import { createEmptyPreviewState } from "~/lib/pipeline/helper/createEmptyPreviewState";
 
 export default async function Page({
   params,

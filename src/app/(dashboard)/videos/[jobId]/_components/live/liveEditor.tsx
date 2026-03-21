@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { LiveStateType } from "~/lib/pipeline/createEmptyPreviewState";
+import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
 import type {
   CharacterStatsCardSchema,
   RoundPreviewSchema,

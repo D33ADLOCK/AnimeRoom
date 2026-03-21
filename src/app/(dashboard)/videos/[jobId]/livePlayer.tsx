@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { LiveStateType } from "~/lib/pipeline/createEmptyPreviewState";
+import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
 import { LivePreview } from "./_components/live/livePreview";
 import { useRealtime } from "~/lib/redis/realtime-client";
 import LiveEditor from "./_components/live/liveEditor";

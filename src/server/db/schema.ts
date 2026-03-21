@@ -7,7 +7,7 @@ import {
   timestamp,
   index,
 } from "drizzle-orm/pg-core";
-import type { LiveStateType } from "~/lib/pipeline/createEmptyPreviewState";
+import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
 
 export const createTable = pgTableCreator((name) => `${name}`);
 export const jobStatus = [
