@@ -19,7 +19,6 @@ import {
   RoundSchema,
 } from "../schemas/roast-battle-split";
 import { ELEVENLABS_FLASH_VOICE } from "../constant";
-import { PipelineLogger } from "./helper/pipelineLogger";
 import { genAudioFast } from "../ai/elevenLabsReplicate";
 import path from "path";
 import { saveToR2UsingUrl } from "../storage/saveUsingUrl";
@@ -36,18 +35,14 @@ export async function runLivePipeline(
   userId: string,
 ) {
   const liveState = createEmptyPreviewState();
-  const logger = new PipelineLogger();
-  logger.startTask("Init Pipeline & State");
-  logger.endTask("Init Pipeline & State");
-
   const r2Promise: Promise<{ key: string; url: string }>[] = [];
 
   try {
     // Run all three generators in parallel
     await Promise.all([
-      generateCharacterBundle({ prompt, liveState, logger, r2Promise, jobId }),
-      generateRoundBundle({ prompt, liveState, logger, r2Promise, jobId }),
-      generateMeta({ prompt, liveState, logger, r2Promise, jobId }),
+      generateCharacterBundle({ prompt, liveState, r2Promise, jobId }),
+      generateRoundBundle({ prompt, liveState, r2Promise, jobId }),
+      generateMeta({ prompt, liveState, r2Promise, jobId }),
     ]);
 
     // All assets generated — now wait for R2 uploads to finish
@@ -111,11 +106,8 @@ export async function runLivePipeline(
       jobId,
       message: "Video Pipeline Completed",
     });
-
-    logger.printReport(jobId);
   } catch (err) {
     console.error("Pipeline crashed:", err);
-    logger.printReport(jobId);
 
     await realtime.emit("pipeline-events", {
       type: "error",
@@ -292,22 +284,18 @@ const generateRoundBundle = async ({
 const generateMeta = async ({
   prompt,
   liveState,
-  logger,
   jobId,
   r2Promise,
 }: {
   prompt: string;
   liveState: LiveStateType;
-  logger: PipelineLogger;
   jobId: string;
   r2Promise: Promise<{ key: string; url: string }>[];
 }) => {
-  logger.startTask("Meta Generation");
   const meta = await generateScript(
     getMetadataPrompt(prompt),
     RoastBattleMetadataSchema,
   );
-  logger.endTask("Meta Generation");
 
   if (!meta) throw new Error("Failed to generate metadata");
 
@@ -318,9 +306,7 @@ const generateMeta = async ({
   });
 
   // Generate thumbnail image
-  logger.startTask("Thumbnail Image Gen");
   const thumbnailImage = await genImageFast(meta.thumbnailPrompt);
-  logger.endTask("Thumbnail Image Gen");
 
   if (!thumbnailImage) throw new Error("Failed to generate thumbnail");
 

@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { randomUUID } from "crypto";
 import { jobsTable } from "~/server/db/schema";
 import { generateAndSaveAudio } from "~/lib/ai/audio";
-import { runLivePipeline } from "~/lib/pipeline/livePipeline";
+import { inngest } from "~/inngest/client";
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
@@ -22,7 +22,14 @@ export const jobRouter = createTRPCRouter({
         })
         .returning({ jobId: jobsTable.id });
 
-      void runLivePipeline(jobId, input.prompt, ctx.userId);
+      await inngest.send({
+        name: "job.created",
+        data: {
+          jobId,
+          prompt: input.prompt,
+          userId: ctx.userId,
+        },
+      });
 
       return id;
     }),

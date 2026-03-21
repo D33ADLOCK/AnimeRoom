@@ -25,13 +25,6 @@ export const roundBundle = async ({
   r2Promise: Promise<{ key: string; url: string }>[];
   jobId: string;
 }) => {
-  const roundScript = streamStructuredArray({
-    prompt: getRoundsPrompt(prompt),
-    schema: RoundSchema,
-  });
-
-  let roundIndex = 0;
-
   const { character1Voice, character2Voice } = await step.run(
     "assign-voices",
     async () => {
@@ -56,86 +49,83 @@ export const roundBundle = async ({
     },
   );
 
-  for await (const round of roundScript) {
-    const voice =
-      round.attacker === "character1" ? character1Voice : character2Voice;
-
-    const cachedRound = await step.run(
-      `round-${roundIndex}-assets`,
-      async () => {
-        const {
-          attackerImageUrl,
-          opponentImageUrl,
-          audioUrl,
-          audioDurationFrames,
-        } = await generateRoundAssets(round, voice);
-
-        // Return ALL data — cached and consistent on replay
-        return {
-          attackerImageUrl,
-          opponentImageUrl,
-          audioUrl,
-          audioDurationFrames,
-          attacker: round.attacker,
-          dialogue: round.dialogue,
-          damage: round.damage,
-        };
-      },
-    );
-
-    const currentRoundIndex = roundIndex;
-
-    roundIndex++;
-
-    await stateUpdateAndEmit(liveState, (state) => {
-      const slot = state.data.rounds[currentRoundIndex]!;
-      slot.attackingCharacter = cachedRound.attacker;
-      slot.attackerImage = cachedRound.attackerImageUrl;
-      slot.opponentProfile = cachedRound.opponentImageUrl;
-      slot.dialogueAudio = cachedRound.audioUrl;
-      slot.dialogueText = cachedRound.dialogue;
-      slot.damage = cachedRound.damage;
-      slot.durationFrames = cachedRound.audioDurationFrames;
+  const roundResults = await step.run("generate-rounds", async () => {
+    const roundScript = streamStructuredArray({
+      prompt: getRoundsPrompt(prompt),
+      schema: RoundSchema,
     });
 
+    let roundIndex = 0;
+
+    for await (const round of roundScript) {
+      const voice =
+        round.attacker === "character1" ? character1Voice : character2Voice;
+      const {
+        attackerImageUrl,
+        opponentImageUrl,
+        audioUrl,
+        audioDurationFrames,
+      } = await generateRoundAssets(round, voice);
+
+      // Real-time emission — browser sees rounds appear during first execution
+      await stateUpdateAndEmit(liveState, (state) => {
+        const slot = state.data.rounds[roundIndex]!;
+        slot.attackingCharacter = round.attacker;
+        slot.attackerImage = attackerImageUrl;
+        slot.opponentProfile = opponentImageUrl;
+        slot.dialogueAudio = audioUrl;
+        slot.dialogueText = round.dialogue;
+        slot.damage = round.damage;
+        slot.durationFrames = audioDurationFrames;
+      });
+
+      roundIndex++;
+    }
+
+    // Return both liveState and round data for R2 — cached on replay
+    return {
+      liveState,
+      rounds: liveState.data.rounds,
+    };
+  });
+
+  // Outside the step — runs on every replay using cached data
+
+  // Restore liveState from cached return (on replay the step body didn't run,
+  // so liveState is still empty — this fills it back in)
+  Object.assign(liveState.data, roundResults.liveState.data);
+
+  // Create R2 upload promises from cached URLs
+  for (let i = 0; i < roundResults.rounds.length; i++) {
+    const round = roundResults.rounds[i]!;
+    if (!round.attackerImage) continue; // skip empty rounds
+
     r2Promise.push(
       saveToR2UsingUrl({
-        url: cachedRound.attackerImageUrl,
-        fileName: path.posix.join(
-          jobId,
-          "image",
-          `round-${currentRoundIndex}-attacker.png`,
-        ),
+        url: round.attackerImage,
+        fileName: path.posix.join(jobId, "image", `round-${i}-attacker.png`),
       }).then((r2Url) => ({
-        key: `round-${currentRoundIndex}-attacker`,
+        key: `round-${i}-attacker`,
         url: r2Url,
       })),
     );
 
     r2Promise.push(
       saveToR2UsingUrl({
-        url: cachedRound.opponentImageUrl,
-        fileName: path.posix.join(
-          jobId,
-          "image",
-          `round-${currentRoundIndex}-opponent.png`,
-        ),
+        url: round.opponentProfile!,
+        fileName: path.posix.join(jobId, "image", `round-${i}-opponent.png`),
       }).then((r2Url) => ({
-        key: `round-${currentRoundIndex}-opponent`,
+        key: `round-${i}-opponent`,
         url: r2Url,
       })),
     );
 
     r2Promise.push(
       saveToR2UsingUrl({
-        url: cachedRound.audioUrl,
-        fileName: path.posix.join(
-          jobId,
-          "audio",
-          `round-${currentRoundIndex}.mp3`,
-        ),
+        url: round.dialogueAudio!,
+        fileName: path.posix.join(jobId, "audio", `round-${i}.mp3`),
       }).then((r2Url) => ({
-        key: `round-${currentRoundIndex}-audio`,
+        key: `round-${i}-audio`,
         url: r2Url,
       })),
     );

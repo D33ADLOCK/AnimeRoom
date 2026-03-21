@@ -1,10 +1,10 @@
 import { serve } from "inngest/next";
 import { inngest } from "~/inngest/client";
-import { helloWorld } from "~/inngest/functions";
+import { generateVideo } from "~/inngest/functions";
 
 const handler = serve({
   client: inngest,
-  functions: [helloWorld],
+  functions: [generateVideo],
 });
 
 export { handler as GET, handler as POST, handler as PUT };

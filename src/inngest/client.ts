@@ -1,6 +1,6 @@
 import { eventType, Inngest, staticSchema } from "inngest";
 
-type JobCreatedData = {
+export type JobCreatedData = {
   jobId: string;
   userId: string;
   prompt: string;

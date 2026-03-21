@@ -24,7 +24,7 @@ export const metaBundle = async ({
   r2Promise: Promise<{ key: string; url: string }>[];
   step: Step;
 }) => {
-  const { battleTitle, shortSubtitle, thumbnailTempUrl, thumbnailPrompt } =
+  const { battleTitle, shortSubtitle, thumbnailTempUrl } =
     await step.run("character-meta", async () => {
       const meta = await generateScript(
         getMetadataPrompt(prompt),
@@ -38,7 +38,6 @@ export const metaBundle = async ({
       return {
         battleTitle: meta.battleTitle,
         shortSubtitle: meta.shortSubtitle,
-        thumbnailPrompt: meta.thumbnailPrompt,
         thumbnailTempUrl,
       };
     });
@@ -59,10 +58,4 @@ export const metaBundle = async ({
     }).then((r2Url) => ({ key: "meta-thumbnail", url: r2Url })),
   );
 
-  return {
-    battleTitle,
-    shortSubtitle,
-    thumbnailTempUrl,
-    thumbnailPrompt,
-  };
 };
