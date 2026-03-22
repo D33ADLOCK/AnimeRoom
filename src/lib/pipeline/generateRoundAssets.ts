@@ -19,12 +19,10 @@ export const generateRoundAssets = async (
 
   if (!attackerImage || !opponentImage) throw new Error("Image failed");
 
-  // We need string versions of the URLs (R2/Replicate returns URL objects)
   const attackerImageUrl = attackerImage.url.toString();
   const opponentImageUrl = opponentImage.url.toString();
   const audioUrl = roundAudio.url.toString();
 
-  // Calculate length of the video scene based on the audio length
   const audioDurationFrames = Math.ceil(
     (await getAudioDuration(audioUrl)) * 30,
   );

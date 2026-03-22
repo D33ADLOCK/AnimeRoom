@@ -4,10 +4,6 @@
 // import { MyComposition } from "./Composition";
 // import type { MyCompositionProps } from "./Composition";
 // import { registerRoot } from "remotion";
-// import {
-//   allAudioDuration,
-// } from "../lib/video/prepareVideoProps";
-
 // const defaultVideoProps: MyCompositionProps = {
 //   character: {
 //     character1: {

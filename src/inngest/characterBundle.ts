@@ -4,7 +4,7 @@ import { getCharacterBundlePrompt } from "~/lib/utils/userPrompt";
 import { type inngest } from "./client";
 import { type GetStepTools } from "inngest";
 import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
-import { emitAnnouncer } from "~/lib/pipeline/livePipeline";
+import { emitAnnouncer } from "~/lib/pipeline/helper/emitAnnouncer";
 import { stateUpdateAndEmit } from "~/lib/pipeline/helper/stateUpdateAndEmit";
 import path from "path";
 import { saveToR2UsingUrl } from "~/lib/storage/saveUsingUrl";

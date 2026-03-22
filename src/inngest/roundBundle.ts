@@ -9,6 +9,8 @@ import { ELEVENLABS_FLASH_VOICE } from "~/lib/constant";
 import { generateRoundAssets } from "~/lib/pipeline/generateRoundAssets";
 import { saveToR2UsingUrl } from "~/lib/storage/saveUsingUrl";
 import path from "path";
+import { genAudioFast } from "~/lib/ai/elevenLabsReplicate";
+import { getAudioDuration } from "~/lib/audio/getAudioDuration";
 
 type Step = GetStepTools<typeof inngest>;
 
@@ -57,15 +59,48 @@ export const roundBundle = async ({
 
     let roundIndex = 0;
 
+    // Cache images per character+role so we only generate each once
+    const imageCache: Record<string, string> = {};
+
     for await (const round of roundScript) {
       const voice =
         round.attacker === "character1" ? character1Voice : character2Voice;
-      const {
-        attackerImageUrl,
-        opponentImageUrl,
-        audioUrl,
-        audioDurationFrames,
-      } = await generateRoundAssets(round, voice);
+      const opponent =
+        round.attacker === "character1" ? "character2" : "character1";
+
+      const attackerCacheKey = `${round.attacker}-attacker`;
+      const opponentCacheKey = `${opponent}-opponent`;
+
+      const needsAttackerImage = !imageCache[attackerCacheKey];
+      const needsOpponentImage = !imageCache[opponentCacheKey];
+
+      let attackerImageUrl: string;
+      let opponentImageUrl: string;
+      let audioUrl: string;
+      let audioDurationFrames: number;
+
+      if (needsAttackerImage || needsOpponentImage) {
+        // First time seeing this character+role combo — generate everything
+        const assets = await generateRoundAssets(round, voice);
+        attackerImageUrl = assets.attackerImageUrl;
+        opponentImageUrl = assets.opponentImageUrl;
+        audioUrl = assets.audioUrl;
+        audioDurationFrames = assets.audioDurationFrames;
+
+        // Cache newly generated images
+        if (needsAttackerImage) imageCache[attackerCacheKey] = attackerImageUrl;
+        if (needsOpponentImage) imageCache[opponentCacheKey] = opponentImageUrl;
+      } else {
+        // Both images cached — only generate audio
+        attackerImageUrl = imageCache[attackerCacheKey]!;
+        opponentImageUrl = imageCache[opponentCacheKey]!;
+
+        const roundAudio = await genAudioFast(round.dialogue, voice);
+        audioUrl = roundAudio.url.toString();
+        audioDurationFrames = Math.ceil(
+          (await getAudioDuration(audioUrl)) * 40,
+        );
+      }
 
       // Real-time emission — browser sees rounds appear during first execution
       await stateUpdateAndEmit(liveState, (state) => {

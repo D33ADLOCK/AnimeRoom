@@ -8,7 +8,6 @@ import { jobRouter } from "./routers/job";
  */
 export const appRouter = createTRPCRouter({
   job: jobRouter,
-  // asset: assetsRouter,
 });
 
 // export type definition of API
