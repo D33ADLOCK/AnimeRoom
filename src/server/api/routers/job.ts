@@ -1,5 +1,5 @@
 import z from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { randomUUID } from "crypto";
 import { jobsTable } from "~/server/db/schema";
 import { generateAndSaveAudio } from "~/lib/ai/audio";
@@ -97,4 +97,28 @@ export const jobRouter = createTRPCRouter({
       orderBy: (t, { desc }) => desc(t.createdAt),
     });
   }),
+
+  getDiscoverVideos: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.db.query.jobsTable.findMany({
+      where: (t, { eq }) => eq(t.jobStatus, "complete"),
+      columns: {
+        id: true,
+        createdAt: true,
+        metaData: true,
+      },
+      orderBy: (t, { desc }) => desc(t.createdAt),
+    });
+  }),
+
+  getPublicManifest: publicProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const videoManifest = await ctx.db.query.jobsTable.findFirst({
+        where: (t, { eq, and }) =>
+          and(eq(t.id, input.jobId), eq(t.jobStatus, "complete")),
+        columns: { videoManifest: true },
+      });
+
+      return videoManifest?.videoManifest ?? null;
+    }),
 });
