@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { api } from "~/trpc/react";
 import { Heart, MessageCircle, Share2, X } from "lucide-react";
 import DiscoverPlayer from "./discoverPlayer";
+import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
 
 type DiscoverOverlayType = {
   allVideos: {
@@ -24,7 +25,7 @@ function VideoSlot({
   title,
   subtitle,
 }: {
-  manifest: unknown;
+  manifest: LiveStateType | null | undefined;
   isActive: boolean;
   title?: string;
   subtitle?: string;
@@ -39,11 +40,7 @@ function VideoSlot({
         <div className="absolute inset-0 h-full w-full">
           {manifest && (
             <DiscoverPlayer
-              videoManifest={
-                manifest as Parameters<
-                  typeof DiscoverPlayer
-                >[0]["videoManifest"]
-              }
+              videoManifest={manifest}
               isActive={isActive}
             />
           )}
