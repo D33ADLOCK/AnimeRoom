@@ -11,7 +11,12 @@ const config = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "pub-a84c9577f3e14dc795b6c4efb1ecb53b.r2.dev",
+        hostname: "cdn.animeroom.space",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.animeroom.space",
         pathname: "/**",
       },
       {
