@@ -44,7 +44,7 @@ export const generateVideo = inngest.createFunction(
           sourceId: `${job!.id}_refund`,
           sourceType: "job",
           transactionId: randomUUID(),
-          metaData: { note: `Refund for job failed: ${job.id}` },
+          metaData: { note: `Refund for job failed: ${job!.id}` },
           userId: userId,
         });
       });

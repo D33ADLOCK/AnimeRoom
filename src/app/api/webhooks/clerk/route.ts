@@ -3,7 +3,6 @@ import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import { db } from "~/server/db";
 import { grantCredits } from "~/server/credits/creditHelper";
 import { randomUUID } from "crypto";
-import { userTable } from "~/server/db/schema";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,12 +21,6 @@ export async function POST(req: NextRequest) {
           eventType: "signup_bonus",
           sourceType: "system",
           metaData: { note: "Welcome Gift" },
-        });
-
-        await tx.insert(userTable).values({
-          userId: userId,
-          role: "user",
-          userPlan: "free",
         });
       });
 
