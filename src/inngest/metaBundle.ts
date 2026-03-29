@@ -24,8 +24,9 @@ export const metaBundle = async ({
   r2Promise: Promise<{ key: string; url: string }>[];
   step: Step;
 }) => {
-  const { battleTitle, shortSubtitle, thumbnailTempUrl } =
-    await step.run("character-meta", async () => {
+  const { battleTitle, shortSubtitle, thumbnailTempUrl } = await step.run(
+    "character-meta",
+    async () => {
       const meta = await generateScript(
         getMetadataPrompt(prompt),
         RoastBattleMetadataSchema,
@@ -40,10 +41,11 @@ export const metaBundle = async ({
         shortSubtitle: meta.shortSubtitle,
         thumbnailTempUrl,
       };
-    });
+    },
+  );
 
   // Emit title + subtitle immediately (no thumbnail yet)
-  await stateUpdateAndEmit(liveState, (state) => {
+  await stateUpdateAndEmit(liveState, jobId, (state) => {
     state.data.meta.battleTitle = battleTitle;
     state.data.meta.shortSubtitle = shortSubtitle;
     state.data.meta.thumbnailUrl = thumbnailTempUrl;
@@ -57,5 +59,4 @@ export const metaBundle = async ({
       fileName: thumbnailKey,
     }).then((r2Url) => ({ key: "meta-thumbnail", url: r2Url })),
   );
-
 };

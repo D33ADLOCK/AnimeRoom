@@ -44,6 +44,7 @@ export const evaluateReadiness = (liveState: LiveStateType) => {
 
 export async function stateUpdateAndEmit(
   liveState: LiveStateType,
+  jobId: string,
   updater: (state: LiveStateType) => void,
 ) {
   updater(liveState);
@@ -52,5 +53,5 @@ export async function stateUpdateAndEmit(
   liveState.data.version += 1;
   liveState.data.totalDurationFrames = calculateTotalDurationFrames(liveState);
 
-  await realtime.emit("pipeline-events", liveState);
+  await realtime.channel(`job:${jobId}`).emit("pipeline-events", liveState);
 }

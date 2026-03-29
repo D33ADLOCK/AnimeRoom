@@ -5,14 +5,16 @@ import { stateUpdateAndEmit } from "./stateUpdateAndEmit";
 
 export const emitAnnouncer = async ({
   liveState,
+  jobId,
 }: {
   liveState: LiveStateType;
+  jobId: string;
 }) => {
   const commonAssets = createCommonPreviewAssets();
   const announcerDurationInFrames = Math.ceil(
     (await getAudioDuration(commonAssets.announcerAudioUrl)) * 30,
   );
-  await stateUpdateAndEmit(liveState, (state) => {
+  await stateUpdateAndEmit(liveState, jobId, (state) => {
     state.data.common = commonAssets;
     state.data.announcer.durationFrames = announcerDurationInFrames;
     state.data.announcer.ready = true;

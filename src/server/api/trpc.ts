@@ -118,6 +118,20 @@ export const protectedProcedure = t.procedure
   .use(timingMiddleware)
   .use(enforceUserIsAuthed);
 
+export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  // const user = await ctx.db.query.userTable.findFirst({
+  //   where: (t, { eq }) => eq(t.userId, ctx.userId),
+  //   columns: { userId: true, role: true },
+  // });
+
+  // if (user?.role !== "admin")
+
+  if (ctx.userId !== process.env.ADMIN_USER)
+    throw new TRPCError({ code: "FORBIDDEN" });
+
+  return next({ ctx });
+});
+
 /**
  * Public (unauthenticated) procedure
  *

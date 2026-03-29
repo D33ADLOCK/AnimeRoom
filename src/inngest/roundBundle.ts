@@ -103,7 +103,7 @@ export const roundBundle = async ({
       }
 
       // Real-time emission — browser sees rounds appear during first execution
-      await stateUpdateAndEmit(liveState, (state) => {
+      await stateUpdateAndEmit(liveState, jobId, (state) => {
         const slot = state.data.rounds[roundIndex]!;
         slot.attackingCharacter = round.attacker;
         slot.attackerImage = attackerImageUrl;

@@ -8,6 +8,8 @@ import { db } from "~/server/db";
 import { realtime } from "~/lib/redis/realtime";
 import { jobsTable } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
+import { grantCredits } from "~/server/credits/creditHelper";
+import { randomUUID } from "crypto";
 
 export const generateVideo = inngest.createFunction(
   {
@@ -28,10 +30,24 @@ export const generateVideo = inngest.createFunction(
 
       const { jobId, userId } = originalEvent.data;
 
-      await db
-        .update(jobsTable)
-        .set({ jobStatus: "failed" })
-        .where(and(eq(jobsTable.id, jobId), eq(jobsTable.userId, userId)));
+      await db.transaction(async (tx) => {
+        const [job] = await tx
+          .update(jobsTable)
+          .set({ jobStatus: "failed" })
+          .where(and(eq(jobsTable.id, jobId), eq(jobsTable.userId, userId)))
+          .returning({ creditCost: jobsTable.creditCost, id: jobsTable.id });
+
+        await grantCredits({
+          tx,
+          amount: job!.creditCost ?? 1,
+          eventType: "job_refund",
+          sourceId: `${job!.id}_refund`,
+          sourceType: "job",
+          transactionId: randomUUID(),
+          metaData: { note: `Refund for job failed: ${job.id}` },
+          userId: userId,
+        });
+      });
 
       await realtime.emit("pipeline-events", {
         type: "error",

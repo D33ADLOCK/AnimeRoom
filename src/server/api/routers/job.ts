@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { jobsTable } from "~/server/db/schema";
 import { generateAndSaveAudio } from "~/lib/ai/audio";
 import { inngest } from "~/inngest/client";
+import { spendCredtis } from "~/server/credits/creditHelper";
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
@@ -12,15 +13,29 @@ export const jobRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const jobId = randomUUID();
 
-      const id = await ctx.db
-        .insert(jobsTable)
-        .values({
+      const [result] = await ctx.db.transaction(async (tx) => {
+        const id = await tx
+          .insert(jobsTable)
+          .values({
+            userId: ctx.userId,
+            id: jobId,
+            prompt: input.prompt,
+            jobStatus: "queued",
+          })
+          .returning({ jobId: jobsTable.id });
+
+        await spendCredtis({
+          tx,
           userId: ctx.userId,
-          id: jobId,
-          prompt: input.prompt,
-          jobStatus: "queued",
-        })
-        .returning({ jobId: jobsTable.id });
+          amount: 1,
+          metaData: { note: "job created" },
+          transactionId: randomUUID(),
+          sourceId: jobId,
+          sourceType: "job",
+        });
+
+        return id;
+      });
 
       await inngest.send({
         name: "job.created",
@@ -31,7 +46,7 @@ export const jobRouter = createTRPCRouter({
         },
       });
 
-      return id;
+      return result;
     }),
 
   getManifest: protectedProcedure

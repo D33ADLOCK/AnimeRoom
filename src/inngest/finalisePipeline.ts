@@ -29,7 +29,7 @@ export const finalisePipeline = async ({
   const r2Map = new Map(r2Results.map(({ key, url }) => [key, url]));
 
   const finalState = await step.run("emit-permanent-url", async () => {
-    await stateUpdateAndEmit(liveState, (state) => {
+    await stateUpdateAndEmit(liveState, jobId, (state) => {
       // Meta thumbnail
       if (r2Map.has("meta-thumbnail")) {
         state.data.meta.thumbnailUrl = r2Map.get("meta-thumbnail")!;

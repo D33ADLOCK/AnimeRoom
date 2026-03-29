@@ -60,11 +60,11 @@ export const characterBundle = async ({
 
   // Emit announcer first (not a step — just a quick state update)
   if (!liveState.data.announcer.ready) {
-    await emitAnnouncer({ liveState });
+    await emitAnnouncer({ jobId, liveState });
   }
 
   // Emit character1 state
-  await stateUpdateAndEmit(liveState, (state) => {
+  await stateUpdateAndEmit(liveState, jobId, (state) => {
     const char1 = state.data.characterStats.character1;
     char1.ready = true;
     char1.name = characterImages.character1.name;
@@ -77,7 +77,7 @@ export const characterBundle = async ({
   });
 
   // Emit character2 state
-  await stateUpdateAndEmit(liveState, (state) => {
+  await stateUpdateAndEmit(liveState, jobId, (state) => {
     const char2 = state.data.characterStats.character2;
     char2.ready = true;
     char2.name = characterImages.character2.name;

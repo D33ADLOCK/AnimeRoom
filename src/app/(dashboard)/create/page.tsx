@@ -10,13 +10,17 @@ import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 
 export default function CreatePage() {
+  const utils = api.useUtils();
+
   const userPromptSchema = z.object({
     prompt: z.string().min(6, "Prompt must be 6 character long"),
   });
 
   type formType = z.infer<typeof userPromptSchema>;
 
-  const { mutateAsync: startJob } = api.job.createJob.useMutation();
+  const { mutateAsync: startJob } = api.job.createJob.useMutation({
+    onSuccess: () => utils.credit.getBalance.invalidate(),
+  });
 
   const router = useRouter();
 
@@ -35,7 +39,7 @@ export default function CreatePage() {
   const userPrompt = watch("prompt");
 
   const onSubmit = async (values: formType) => {
-    const [result] = await startJob({ prompt: values.prompt });
+    const result = await startJob({ prompt: values.prompt });
 
     if (!result) throw new Error("Job Creating failed");
 

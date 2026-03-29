@@ -5,6 +5,7 @@ import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewStat
 import { LivePreview } from "./_components/live/livePreview";
 import { useRealtime } from "~/lib/redis/realtime-client";
 import LiveEditor from "./_components/live/liveEditor";
+import { useParams } from "next/navigation";
 
 export default function LivePlayer({
   initialLiveState,
@@ -17,8 +18,11 @@ export default function LivePlayer({
     initialLiveState,
   );
 
+  const { jobId } = useParams<{ jobId: string }>();
+
   useRealtime({
     enabled: !isComplete,
+    channels: [`job:${jobId}`],
     events: ["pipeline-events"],
     onData: ({ event, data }) => {
       console.log(`Received ${event}:`, data);

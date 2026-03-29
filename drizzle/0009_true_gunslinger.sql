@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ADD COLUMN "credit_cost" integer DEFAULT 1;

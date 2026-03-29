@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ALTER COLUMN "credit_cost" SET NOT NULL;
