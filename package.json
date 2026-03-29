@@ -19,8 +19,8 @@
     "preview": "next build && next start",
     "start": "HOSTNAME=0.0.0.0 node .next/standalone/server.js",
     "studio": "remotion studio src/remotion/Root.tsx --config=src/remotion/remotion.config.ts",
-    "sharp": "tsx src/remotion/scripts/trim-images.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "inngest:dev": "pnpx inngest-cli@latest dev"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",

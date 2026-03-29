@@ -72,16 +72,23 @@ export async function grantCredits({
 
   if (!balance) throw new Error("Failed to update balance");
 
-  const updateTransaction = await tx.insert(creditTransactionsTable).values({
-    id: transactionId,
-    userId: userId,
-    type: eventType,
-    creditsDelta: amount,
-    sourceType: sourceType,
-    balanceAfter: balance.currentBalance,
-    sourceId: sourceId,
-    metaData: metaData,
-  });
+  const updateTransaction = await tx
+    .insert(creditTransactionsTable)
+    .values({
+      id: transactionId,
+      userId: userId,
+      type: eventType,
+      creditsDelta: amount,
+      sourceType: sourceType,
+      balanceAfter: balance.currentBalance,
+      sourceId: sourceId,
+      metaData: metaData,
+    })
+    .returning({ id: creditTransactionsTable.id });
+
+  if (!updateTransaction) throw new Error("Failed to update balance");
+
+  return { success: true };
 }
 
 export async function spendCredtis({

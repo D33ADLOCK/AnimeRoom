@@ -1,7 +1,7 @@
 import z from "zod";
 import { adminProcedure, createTRPCRouter } from "../trpc";
-import { userCreditAccountTable, userTable } from "~/server/db/schema";
-import { desc, eq, lt } from "drizzle-orm";
+import { userCreditAccountTable } from "~/server/db/schema";
+import { desc, lt } from "drizzle-orm";
 import { grantCredits } from "~/server/credits/creditHelper";
 import { randomUUID } from "crypto";
 import { TRPCError } from "@trpc/server";
@@ -11,23 +11,19 @@ export const adminRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number(),
-        cursor: z.string().datetime().nullable(),
+        cursor: z.string().datetime().nullish(),
       }),
     )
     .query(async ({ ctx, input }) => {
       const users = await ctx.db
         .select()
-        .from(userTable)
-        .leftJoin(
-          userCreditAccountTable,
-          eq(userTable.userId, userCreditAccountTable.userId),
-        )
+        .from(userCreditAccountTable)
         .where(
           input.cursor
-            ? lt(userTable.createdAt, new Date(input.cursor))
+            ? lt(userCreditAccountTable.createdAt, new Date(input.cursor))
             : undefined,
         )
-        .orderBy(desc(userTable.createdAt))
+        .orderBy(desc(userCreditAccountTable.createdAt))
         .limit(input.limit + 1);
 
       if (users.length === 0) return { users: [], cursor: null };
@@ -35,7 +31,7 @@ export const adminRouter = createTRPCRouter({
       const hasNextPage = users.length === input.limit + 1;
       const items = users.slice(0, input.limit);
       const nextCursor = hasNextPage
-        ? items[items.length - 1]!.user.createdAt?.toISOString()
+        ? items[items.length - 1]!.createdAt?.toISOString()
         : null;
 
       return { users: items, cursor: nextCursor };
