@@ -28,7 +28,7 @@ export async function grantCredits({
   transactionId,
   userId,
   sourceId,
-  amount,
+  creditAmount,
   eventType,
   sourceType,
   metaData,
@@ -37,12 +37,12 @@ export async function grantCredits({
   transactionId: string;
   userId: string;
   sourceId: string;
-  amount: number;
+  creditAmount: number;
   eventType: TransactionType;
   sourceType: SourceType;
   metaData: TransactionMetadataType;
 }) {
-  if (amount <= 0) throw new Error("Amount must be positive");
+  if (creditAmount <= 0) throw new Error("Amount must be positive");
 
   const [check] = await tx
     .select({ id: creditTransactionsTable.id })
@@ -55,15 +55,15 @@ export async function grantCredits({
     .insert(userCreditAccountTable)
     .values({
       userId: userId,
-      balanceCredits: amount,
-      lifetimeGrantedCredits: amount,
+      balanceCredits: creditAmount,
+      lifetimeGrantedCredits: creditAmount,
       lifetimeSpentCredits: 0,
     })
     .onConflictDoUpdate({
       target: userCreditAccountTable.userId,
       set: {
-        balanceCredits: sql`${userCreditAccountTable.balanceCredits}+ ${amount}`,
-        lifetimeGrantedCredits: sql`${userCreditAccountTable.lifetimeGrantedCredits}+${amount}`,
+        balanceCredits: sql`${userCreditAccountTable.balanceCredits}+ ${creditAmount}`,
+        lifetimeGrantedCredits: sql`${userCreditAccountTable.lifetimeGrantedCredits}+${creditAmount}`,
       },
     })
     .returning({
@@ -78,7 +78,7 @@ export async function grantCredits({
       id: transactionId,
       userId: userId,
       type: eventType,
-      creditsDelta: amount,
+      creditsDelta: creditAmount,
       sourceType: sourceType,
       balanceAfter: balance.currentBalance,
       sourceId: sourceId,
@@ -96,7 +96,7 @@ export async function spendCredtis({
   transactionId,
   userId,
   sourceId,
-  amount,
+  creditAmount,
   sourceType,
   metaData,
 }: {
@@ -104,11 +104,11 @@ export async function spendCredtis({
   transactionId: string;
   userId: string;
   sourceId: string;
-  amount: number;
+  creditAmount: number;
   sourceType: SourceType;
   metaData: TransactionMetadataType;
 }) {
-  if (amount <= 0) throw new Error("Amount must be positive");
+  if (creditAmount <= 0) throw new Error("Amount must be positive");
 
   const verify = await tx.query.creditTransactionsTable.findFirst({
     where: (t, { eq }) => eq(t.sourceId, sourceId),
@@ -125,13 +125,14 @@ export async function spendCredtis({
 
   if (!account) throw new Error("No credit account found");
 
-  if (account.balanceCredits < amount) throw new Error("Insufficient credits");
+  if (account.balanceCredits < creditAmount)
+    throw new Error("Insufficient credits");
 
   const [updated] = await tx
     .update(userCreditAccountTable)
     .set({
-      balanceCredits: sql`${userCreditAccountTable.balanceCredits}-${amount}`,
-      lifetimeSpentCredits: sql`${userCreditAccountTable.lifetimeSpentCredits} + ${amount}`,
+      balanceCredits: sql`${userCreditAccountTable.balanceCredits}-${creditAmount}`,
+      lifetimeSpentCredits: sql`${userCreditAccountTable.lifetimeSpentCredits} + ${creditAmount}`,
     })
     .where(eq(userCreditAccountTable.userId, userId))
     .returning({ currentBalance: userCreditAccountTable.balanceCredits });
@@ -144,7 +145,7 @@ export async function spendCredtis({
     sourceType,
     sourceId,
     metaData,
-    creditsDelta: -amount,
+    creditsDelta: -creditAmount,
     userId,
     id: transactionId,
   });

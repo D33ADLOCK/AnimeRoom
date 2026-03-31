@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
           transactionId: randomUUID(),
           userId,
           sourceId: userId,
-          amount: 10,
+          creditAmount: 10,
           eventType: "signup_bonus",
           sourceType: "system",
           metaData: { note: "Welcome Gift" },

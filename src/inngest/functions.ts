@@ -39,7 +39,7 @@ export const generateVideo = inngest.createFunction(
 
         await grantCredits({
           tx,
-          amount: job!.creditCost ?? 1,
+          creditAmount: job!.creditCost ?? 1,
           eventType: "job_refund",
           sourceId: `${job!.id}_refund`,
           sourceType: "job",

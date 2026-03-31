@@ -27,7 +27,7 @@ export const jobRouter = createTRPCRouter({
         await spendCredtis({
           tx,
           userId: ctx.userId,
-          amount: 1,
+          creditAmount: 1,
           metaData: { note: "job created" },
           transactionId: randomUUID(),
           sourceId: jobId,

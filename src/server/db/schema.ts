@@ -205,6 +205,9 @@ export const paymentOrderStatus = [
 ] as const;
 export type PaymentOrderStatus = (typeof paymentOrderStatus)[number];
 
+export const currency = ["usd", "inr"] as const;
+export type CurrencyType = (typeof currency)[number];
+
 export type PaymentOrderMetadata = {
   stripeCheckoutSessionId?: string;
   stripePaymentIntentId?: string;
@@ -223,7 +226,7 @@ export const paymentOrdersTable = createTable(
     status: text("status").$type<PaymentOrderStatus>().notNull(),
     creditsPurchased: integer("credits_purchased").notNull(),
     amountMinor: integer("amount_minor").notNull(),
-    currency: text("currency").notNull(),
+    currency: text("currency").notNull().$type<CurrencyType>(),
     providerOrderId: text("provider_order_id"),
     providerPaymentId: text("provider_payment_id"),
     metadata: jsonb("metadata").$type<PaymentOrderMetadata>(),

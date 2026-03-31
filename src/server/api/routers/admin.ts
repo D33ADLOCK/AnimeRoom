@@ -44,7 +44,7 @@ export const adminRouter = createTRPCRouter({
         return await grantCredits({
           tx,
           userId: input.userId,
-          amount: input.amount,
+          creditAmount: input.amount,
           eventType: "manual_adjustment",
           metaData: { note: "Credits added manually" },
           sourceId: randomUUID(),
