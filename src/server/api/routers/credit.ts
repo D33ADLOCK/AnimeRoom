@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const creditRouter = createTRPCRouter({

@@ -1,6 +1,6 @@
 "use client";
 
-import { SignedIn, SignedOut, SignIn, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "~/components/ui/button";

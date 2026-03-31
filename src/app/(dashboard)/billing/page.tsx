@@ -1,6 +1,5 @@
-import { Zap, Gift, Check, Star, ShieldCheck } from "lucide-react";
+import { Zap, Gift, Check, ShieldCheck } from "lucide-react";
 import { CREDIT_PACKAGE } from "~/config/credits/package";
-import { api } from "~/trpc/server";
 import BuyButton from "./buyButton";
 
 export default function BillingPage() {
