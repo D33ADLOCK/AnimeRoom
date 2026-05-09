@@ -1,16 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { Download } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useSidebar } from "~/components/ui/sidebar";
 import CreditBalance from "../(dashboard)/_components/creditBalance";
+import ExportModal from "./ExportModal";
 
 function TopNavbar() {
   const { open } = useSidebar();
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith("/login");
+  const [exportOpen, setExportOpen] = useState(false);
+
+  // Extract jobId if we're on /videos/[jobId]
+  const videoMatch = /^\/videos\/([^/]+)$/.exec(pathname);
+  const jobId = videoMatch?.[1];
 
   return (
     <div className="relative flex w-full items-center">
@@ -33,6 +41,24 @@ function TopNavbar() {
 
       <div className="ml-auto flex items-center gap-3">
         <SignedIn>
+          {jobId && (
+            <>
+              <Button
+                onClick={() => setExportOpen(true)}
+                className="cursor-pointer rounded-none border-[3px] border-[var(--color-nb-border)] bg-[var(--color-nb-mint)] px-5 py-2 font-extrabold tracking-wider text-[var(--color-nb-text)] uppercase shadow-[4px_4px_0px_var(--color-nb-shadow)] hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[var(--color-nb-mint)] hover:shadow-[2px_2px_0px_var(--color-nb-shadow)]"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+
+              <ExportModal
+                jobId={jobId}
+                open={exportOpen}
+                onOpenChange={setExportOpen}
+              />
+            </>
+          )}
+
           <CreditBalance />
         </SignedIn>
 

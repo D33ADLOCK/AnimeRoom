@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ADD COLUMN "render_id" text;

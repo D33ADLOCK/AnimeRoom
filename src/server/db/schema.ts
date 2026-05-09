@@ -39,7 +39,12 @@ export const jobsTable = createTable("jobs", {
     shortSubtitle: string;
     thumbnailUrl: string;
   }>(),
+  renderId: text("render_id"),
   videoUrl: text("video_url"),
+  renderStatus: text("render_status").$type<
+    "rendering" | "completed" | "failed"
+  >(),
+  bucketName: text("bucket_name"),
   creditCost: integer("credit_cost").default(1).notNull(),
   error: text("error"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

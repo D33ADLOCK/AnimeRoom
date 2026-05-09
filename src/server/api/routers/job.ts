@@ -5,6 +5,12 @@ import { jobsTable } from "~/server/db/schema";
 import { generateAndSaveAudio } from "~/lib/ai/audio";
 import { inngest } from "~/inngest/client";
 import { spendCredtis } from "~/server/credits/creditHelper";
+import { TRPCError } from "@trpc/server";
+import {
+  startVideoRender,
+  getVideoRenderProgress,
+} from "~/lib/remotionLambda/renderVideo";
+import { eq } from "drizzle-orm";
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
@@ -135,5 +141,123 @@ export const jobRouter = createTRPCRouter({
       });
 
       return videoManifest?.videoManifest ?? null;
+    }),
+
+  startExport: protectedProcedure
+    .input(z.object({ jobId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const job = await ctx.db.query.jobsTable.findFirst({
+        where: (t, { and, eq }) =>
+          and(
+            eq(t.id, input.jobId),
+            eq(t.userId, ctx.userId),
+            eq(t.jobStatus, "complete"),
+          ),
+        columns: { videoManifest: true, id: true },
+      });
+
+      if (!job)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+
+      if (!job.videoManifest)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Please wait for the video to complete",
+        });
+
+      const { renderId, bucketName } = await startVideoRender({
+        finalJobState: job.videoManifest,
+        jobId: job.id,
+      });
+
+      const [render] = await ctx.db
+        .update(jobsTable)
+        .set({
+          renderId,
+          bucketName,
+          renderStatus: "rendering",
+        })
+        .where(eq(jobsTable.id, job.id))
+        .returning({
+          renderId: jobsTable.renderId,
+          renderStatus: jobsTable.renderStatus,
+        });
+
+      if (!render)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to updated the render status",
+        });
+
+      return { render };
+    }),
+
+  getExportProgress: protectedProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const job = await ctx.db.query.jobsTable.findFirst({
+        where: (t, { and, eq }) =>
+          and(eq(t.id, input.jobId), eq(t.userId, ctx.userId)),
+        columns: {
+          renderId: true,
+          bucketName: true,
+          renderStatus: true,
+          videoUrl: true,
+        },
+      });
+
+      if (!job)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+
+      if (job.renderStatus === "completed" && job.videoUrl)
+        return { done: true, overallProgress: 1, videoUrl: job.videoUrl };
+
+      if (job.renderStatus === "failed")
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Render failed",
+        });
+
+      if (!job.renderId || !job.bucketName)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Export has not been started",
+        });
+
+      const progress = await getVideoRenderProgress({
+        renderId: job.renderId,
+        bucketName: job.bucketName,
+      });
+
+      if (progress.fatalErrorEncountered) {
+        await ctx.db
+          .update(jobsTable)
+          .set({ renderStatus: "failed" })
+          .where(eq(jobsTable.id, input.jobId));
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Render failed",
+        });
+      }
+
+      if (progress.done && progress.outputFile) {
+        await ctx.db
+          .update(jobsTable)
+          .set({ renderStatus: "completed", videoUrl: progress.outputFile })
+          .where(eq(jobsTable.id, input.jobId));
+
+        return {
+          done: true,
+          overallProgress: 1,
+          videoUrl: progress.outputFile,
+        };
+      }
+
+      return {
+        done: false,
+        overallProgress: progress.overallProgress,
+        videoUrl: null,
+      };
     }),
 });

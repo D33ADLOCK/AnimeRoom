@@ -92,6 +92,27 @@
       "when": 1774751603031,
       "tag": "0012_clean_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1775100305716,
+      "tag": "0013_complex_squadron_supreme",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1775100447204,
+      "tag": "0014_loose_ultimo",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1775103312026,
+      "tag": "0015_shallow_molten_man",
+      "breakpoints": true
     }
   ]
 }
