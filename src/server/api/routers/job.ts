@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { jobsTable } from "~/server/db/schema";
 import { generateAndSaveAudio } from "~/lib/ai/audio";
 import { inngest } from "~/inngest/client";
-import { spendCredtis } from "~/server/credits/creditHelper";
+import { grantCredits, spendCredtis } from "~/server/credits/creditHelper";
 import { TRPCError } from "@trpc/server";
 import {
   startVideoRender,
@@ -43,14 +43,64 @@ export const jobRouter = createTRPCRouter({
         return id;
       });
 
-      await inngest.send({
-        name: "job.created",
-        data: {
-          jobId,
-          prompt: input.prompt,
-          userId: ctx.userId,
-        },
-      });
+      try {
+        await inngest.send({
+          id: jobId,
+          name: "job.created",
+          data: {
+            jobId,
+            prompt: input.prompt,
+            userId: ctx.userId,
+          },
+        });
+
+        await ctx.db
+          .update(jobsTable)
+          .set({
+            dispatchedAt: new Date(),
+            dispatchError: null,
+            error: null,
+          })
+          .where(eq(jobsTable.id, jobId));
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unknown Inngest dispatch error";
+
+        await ctx.db.transaction(async (tx) => {
+          const [job] = await tx
+            .update(jobsTable)
+            .set({
+              jobStatus: "failed",
+              dispatchError: message,
+              error: "Failed to start video generation.",
+            })
+            .where(eq(jobsTable.id, jobId))
+            .returning({
+              id: jobsTable.id,
+              userId: jobsTable.userId,
+              creditCost: jobsTable.creditCost,
+            });
+
+          if (!job) return;
+
+          await grantCredits({
+            tx,
+            userId: job.userId,
+            creditAmount: job.creditCost,
+            eventType: "job_refund",
+            metaData: { note: `Refund for job dispatch failed: ${job.id}` },
+            sourceId: `${job.id}_dispatch_refund`,
+            sourceType: "job",
+            transactionId: randomUUID(),
+          });
+        });
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "We could not start video generation. Your credit has been refunded. Please try again.",
+        });
+      }
 
       return result;
     }),

@@ -5,7 +5,7 @@ import { stateUpdateAndEmit } from "~/lib/pipeline/helper/stateUpdateAndEmit";
 import { db } from "~/server/db";
 import { jobsTable } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
-import { realtime } from "~/lib/redis/realtime";
+import { safeRealtimeEmit } from "~/lib/realtime/safeRealtimeEmit";
 
 type Step = GetStepTools<typeof inngest>;
 
@@ -82,7 +82,7 @@ export const finalisePipeline = async ({
   });
 
   await step.run("complete-pipeline", async () => {
-    await realtime.emit("pipeline-events", {
+    await safeRealtimeEmit({
       type: "completed",
       jobId,
       message: "Video Pipeline Completed",

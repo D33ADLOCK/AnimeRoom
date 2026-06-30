@@ -47,6 +47,8 @@ export const jobsTable = createTable("jobs", {
   bucketName: text("bucket_name"),
   creditCost: integer("credit_cost").default(1).notNull(),
   error: text("error"),
+  dispatchedAt: timestamp("dispatched_at"),
+  dispatchError: text("dispatch_error"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .notNull()

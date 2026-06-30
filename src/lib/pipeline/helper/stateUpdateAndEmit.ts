@@ -1,5 +1,5 @@
-import { realtime } from "~/lib/redis/realtime";
 import type { LiveStateType } from "./createEmptyPreviewState";
+import { safeRealtimeChannelEmit } from "~/lib/realtime/safeRealtimeEmit";
 
 export function calculateTotalDurationFrames(liveState: LiveStateType): number {
   let total = 0;
@@ -53,5 +53,5 @@ export async function stateUpdateAndEmit(
   liveState.data.version += 1;
   liveState.data.totalDurationFrames = calculateTotalDurationFrames(liveState);
 
-  await realtime.channel(`job:${jobId}`).emit("pipeline-events", liveState);
+  await safeRealtimeChannelEmit(`job:${jobId}`, liveState);
 }

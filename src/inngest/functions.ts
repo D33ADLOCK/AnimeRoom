@@ -5,11 +5,11 @@ import { roundBundle } from "./roundBundle";
 import { metaBundle } from "./metaBundle";
 import { finalisePipeline } from "./finalisePipeline";
 import { db } from "~/server/db";
-import { realtime } from "~/lib/redis/realtime";
 import { jobsTable } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { grantCredits } from "~/server/credits/creditHelper";
 import { randomUUID } from "crypto";
+import { safeRealtimeEmit } from "~/lib/realtime/safeRealtimeEmit";
 
 export const generateVideo = inngest.createFunction(
   {
@@ -49,7 +49,7 @@ export const generateVideo = inngest.createFunction(
         });
       });
 
-      await realtime.emit("pipeline-events", {
+      await safeRealtimeEmit({
         type: "error",
         code: "ASSET_PIPELINE_CRASH",
         message:
@@ -59,6 +59,24 @@ export const generateVideo = inngest.createFunction(
   },
   async ({ event, step }) => {
     const { jobId, prompt, userId } = event.data;
+
+    const shouldContinue = await step.run("mark-job-generating", async () => {
+      const [job] = await db
+        .update(jobsTable)
+        .set({ jobStatus: "generating" })
+        .where(
+          and(
+            eq(jobsTable.id, jobId),
+            eq(jobsTable.userId, userId),
+            eq(jobsTable.jobStatus, "queued"),
+          ),
+        )
+        .returning({ jobStatus: jobsTable.jobStatus });
+
+      return job?.jobStatus === "generating";
+    });
+
+    if (!shouldContinue) return;
 
     const liveState = createEmptyPreviewState();
 

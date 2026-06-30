@@ -113,6 +113,13 @@
       "when": 1775103312026,
       "tag": "0015_shallow_molten_man",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1782726016894,
+      "tag": "0016_good_pride",
+      "breakpoints": true
     }
   ]
 }
