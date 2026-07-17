@@ -15,9 +15,13 @@ import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
+import {
+  createJobSchema,
+  PROMPT_MAX_LENGTH,
+  type CreateJobInput,
+} from "~/lib/schemas/job";
 
 const starterTemplates: {
   title: string;
@@ -77,12 +81,6 @@ export default function CreatePage() {
   const utils = api.useUtils();
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
 
-  const userPromptSchema = z.object({
-    prompt: z.string().min(6, "Prompt must be 6 character long"),
-  });
-
-  type formType = z.infer<typeof userPromptSchema>;
-
   const { mutateAsync: startJob } = api.job.createJob.useMutation({
     onSuccess: () => utils.credit.getBalance.invalidate(),
   });
@@ -92,14 +90,16 @@ export default function CreatePage() {
   const {
     handleSubmit,
     register,
+    setError,
     setFocus,
     setValue,
     watch,
     formState: { isSubmitting, errors },
-  } = useForm<formType>({
-    resolver: zodResolver(userPromptSchema),
+  } = useForm<CreateJobInput>({
+    resolver: zodResolver(createJobSchema),
     defaultValues: {
       prompt: "",
+      requestId: crypto.randomUUID(),
     },
   });
 
@@ -115,14 +115,23 @@ export default function CreatePage() {
     setFocus("prompt");
   };
 
-  const onSubmit = async (values: formType) => {
-    const result = await startJob({ prompt: values.prompt });
+  const onSubmit = async (values: CreateJobInput) => {
+    try {
+      const result = await startJob(values);
 
-    if (!result) throw new Error("Job Creating failed");
+      if (!result) throw new Error("Job creation failed");
 
-    router.push(`/videos/${result.jobId}`);
+      router.push(`/videos/${result.jobId}`);
 
-    return result.jobId;
+      return result.jobId;
+    } catch (error) {
+      setError("root", {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not start generation. Please try again.",
+      });
+    }
   };
 
   return (
@@ -142,6 +151,7 @@ export default function CreatePage() {
       >
         <div className="flex flex-col gap-3">
           <Textarea
+            maxLength={PROMPT_MAX_LENGTH}
             placeholder="e.g. Goku vs Vegeta in a roast battle. Goku is cocky and keeps flexing his Ultra Instinct. Vegeta is furious and roasts Goku's parenting skills..."
             {...register("prompt")}
             className="nb-input min-h-[230px] resize-none rounded-none border-[3px] border-[var(--color-nb-border)] bg-white px-4 py-4 text-base leading-relaxed font-semibold shadow-[3px_3px_0px_var(--color-nb-shadow)] placeholder:font-normal placeholder:text-[var(--color-nb-text)]/40 focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[1px_1px_0px_var(--color-nb-shadow)] focus-visible:ring-0"
@@ -152,12 +162,13 @@ export default function CreatePage() {
             </p>
           )}
           <p className="text-right text-xs font-bold text-[var(--color-nb-text)]/50">
-            {userPrompt.length} characters
+            {userPrompt.length}/{PROMPT_MAX_LENGTH} characters
           </p>
         </div>
 
         <Button
           type="submit"
+          disabled={isSubmitting}
           size="lg"
           className="nb-btn w-full cursor-pointer rounded-none border-[3px] border-[var(--color-nb-border)] bg-[var(--color-nb-pink)] py-6 text-base font-extrabold tracking-wider text-[var(--color-nb-text)] uppercase shadow-[4px_4px_0px_var(--color-nb-shadow)] hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[var(--color-nb-pink)] hover:shadow-[2px_2px_0px_var(--color-nb-shadow)] disabled:opacity-50"
         >
@@ -173,6 +184,11 @@ export default function CreatePage() {
             </>
           )}
         </Button>
+        {errors.root?.message && (
+          <p className="text-sm font-bold text-red-600">
+            {errors.root.message}
+          </p>
+        )}
       </form>
 
       <section className="mt-2 flex flex-col gap-4">

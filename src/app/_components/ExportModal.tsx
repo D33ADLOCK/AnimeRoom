@@ -28,10 +28,14 @@ export default function ExportModal({
   const [exportState, setExportState] = useState<ExportState>("idle");
   const [progress, setProgress] = useState(0);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const { mutate: startExport, isPending } = api.job.startExport.useMutation({
     onSuccess: () => setExportState("exporting"),
-    onError: () => setExportState("failed"),
+    onError: (error) => {
+      setExportError(error.message);
+      setExportState("failed");
+    },
   });
 
   const { data: progressData, isError: progressError } =
@@ -39,8 +43,7 @@ export default function ExportModal({
       { jobId },
       {
         enabled: exportState === "exporting",
-        refetchInterval: (query) =>
-          query.state.data?.done ? false : 3000,
+        refetchInterval: (query) => (query.state.data?.done ? false : 3000),
       },
     );
 
@@ -65,6 +68,7 @@ export default function ExportModal({
     setExportState("idle");
     setProgress(0);
     setVideoUrl(null);
+    setExportError(null);
   };
 
   return (
@@ -72,7 +76,7 @@ export default function ExportModal({
       <DialogContent className="rounded-none border-[4px] border-black bg-white p-0 shadow-[8px_8px_0px_rgba(0,0,0,1)] sm:max-w-md">
         {/* Header */}
         <DialogHeader className="border-b-[3px] border-black bg-[var(--color-nb-yellow)] px-6 py-5">
-          <DialogTitle className="text-xl font-black uppercase tracking-tight">
+          <DialogTitle className="text-xl font-black tracking-tight uppercase">
             Export Video
           </DialogTitle>
           <DialogDescription className="text-sm font-semibold text-black/60">
@@ -92,18 +96,12 @@ export default function ExportModal({
             }`}
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none border-[2px] border-black bg-white">
-              {exportState === "idle" && (
-                <VideoIcon className="h-5 w-5" />
-              )}
+              {exportState === "idle" && <VideoIcon className="h-5 w-5" />}
               {exportState === "exporting" && (
                 <Loader2 className="h-5 w-5 animate-spin" />
               )}
-              {exportState === "done" && (
-                <Download className="h-5 w-5" />
-              )}
-              {exportState === "failed" && (
-                <AlertCircle className="h-5 w-5" />
-              )}
+              {exportState === "done" && <Download className="h-5 w-5" />}
+              {exportState === "failed" && <AlertCircle className="h-5 w-5" />}
             </div>
 
             <div className="flex flex-col gap-0.5">
@@ -135,7 +133,7 @@ export default function ExportModal({
                 <>
                   <p className="text-sm font-black">Export failed</p>
                   <p className="text-xs font-semibold text-black/50">
-                    Something went wrong. Try again.
+                    {exportError ?? "Something went wrong. Try again."}
                   </p>
                 </>
               )}
@@ -157,7 +155,7 @@ export default function ExportModal({
             <Button
               onClick={handleStartExport}
               disabled={isPending}
-              className="w-full rounded-none border-[3px] border-black bg-black py-6 text-sm font-black uppercase tracking-widest text-white shadow-[4px_4px_0px_rgba(0,0,0,0.3)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,0.3)]"
+              className="w-full rounded-none border-[3px] border-black bg-black py-6 text-sm font-black tracking-widest text-white uppercase shadow-[4px_4px_0px_rgba(0,0,0,0.3)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,0.3)]"
             >
               Start Export
             </Button>
@@ -166,7 +164,7 @@ export default function ExportModal({
           {exportState === "exporting" && (
             <Button
               disabled
-              className="w-full rounded-none border-[3px] border-black bg-black py-6 text-sm font-black uppercase tracking-widest text-white opacity-50"
+              className="w-full rounded-none border-[3px] border-black bg-black py-6 text-sm font-black tracking-widest text-white uppercase opacity-50"
             >
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Exporting...
@@ -179,7 +177,7 @@ export default function ExportModal({
               download
               target="_blank"
               rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2 rounded-none border-[3px] border-black bg-[var(--color-nb-mint)] py-4 text-sm font-black uppercase tracking-widest text-black shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+              className="flex w-full items-center justify-center gap-2 rounded-none border-[3px] border-black bg-[var(--color-nb-mint)] py-4 text-sm font-black tracking-widest text-black uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
             >
               <Download className="h-4 w-4" />
               Download MP4
@@ -189,7 +187,7 @@ export default function ExportModal({
           {exportState === "failed" && (
             <Button
               onClick={handleRetry}
-              className="w-full rounded-none border-[3px] border-black bg-[var(--color-nb-pink)] py-6 text-sm font-black uppercase tracking-widest text-black shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+              className="w-full rounded-none border-[3px] border-black bg-[var(--color-nb-pink)] py-6 text-sm font-black tracking-widest text-black uppercase shadow-[4px_4px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
             >
               Try Again
             </Button>
