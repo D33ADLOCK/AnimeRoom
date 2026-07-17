@@ -9,13 +9,18 @@ export default async function Page({
 }) {
   const { jobId } = await params;
 
-  const videoManifest = await api.job.getManifest({ jobId });
+  const initialStatus = await api.job.getStatus({ jobId });
+  const initialManifest =
+    initialStatus.jobStatus === "complete"
+      ? await api.job.getManifest({ jobId })
+      : null;
 
-  const isCompleted = !!videoManifest;
-
-  const emptyManifest = createEmptyPreviewState();
-
-  const vm = videoManifest ?? emptyManifest;
-
-  return <LivePlayer initialLiveState={vm} isComplete={isCompleted} />;
+  return (
+    <LivePlayer
+      jobId={jobId}
+      initialStatus={initialStatus}
+      initialLiveState={initialManifest ?? createEmptyPreviewState()}
+      initialManifest={initialManifest}
+    />
+  );
 }

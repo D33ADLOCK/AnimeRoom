@@ -76,6 +76,7 @@ const completedEvent = z.object({
 
 const errorEvent = z.object({
   type: z.literal("error"),
+  jobId: z.string(),
   code: z.string().describe("e.g. 'ASSET_PIPELINE_CRASH'"),
   message: z.string().describe("User-friendly error message to display"),
 });

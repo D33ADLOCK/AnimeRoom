@@ -9,6 +9,7 @@ import {
   index,
   integer,
   check,
+  boolean,
 } from "drizzle-orm/pg-core";
 import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
 
@@ -54,6 +55,14 @@ export const jobsTable = createTable("jobs", {
   bucketName: text("bucket_name"),
   creditCost: integer("credit_cost").default(1).notNull(),
   error: text("error"),
+  currentStage: text("current_stage").default("queued").notNull(),
+  safeError: text("safe_error"),
+  internalError: text("internal_error"),
+  retryable: boolean("retryable").default(false).notNull(),
+  generatingAt: timestamp("generating_at"),
+  completedAt: timestamp("completed_at"),
+  failedAt: timestamp("failed_at"),
+  refundedAt: timestamp("refunded_at"),
   dispatchedAt: timestamp("dispatched_at"),
   dispatchError: text("dispatch_error"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

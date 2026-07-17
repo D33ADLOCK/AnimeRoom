@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { randomUUID } from "crypto";
 import { jobsTable } from "~/server/db/schema";
 import { inngest } from "~/inngest/client";
-import { grantCredits, spendCredtis } from "~/server/credits/creditHelper";
+import { spendCredtis } from "~/server/credits/creditHelper";
 import { TRPCError } from "@trpc/server";
 import {
   startVideoRender,
@@ -12,6 +12,7 @@ import {
 import { and, eq, isNull, lt, or } from "drizzle-orm";
 import { createJobSchema, jobIdSchema } from "~/lib/schemas/job";
 import { enforceRateLimit } from "~/server/guardrails/rateLimit";
+import { failJobAndRefund } from "~/server/jobs/jobLifecycle";
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
@@ -39,7 +40,7 @@ export const jobRouter = createTRPCRouter({
 
       await enforceRateLimit({ action: "createJob", userId: ctx.userId });
 
-      const [result] = await ctx.db.transaction(async (tx) => {
+      const result = await ctx.db.transaction(async (tx) => {
         const id = await tx
           .insert(jobsTable)
           .values({
@@ -65,7 +66,7 @@ export const jobRouter = createTRPCRouter({
             });
           }
 
-          return [{ jobId: concurrent.id }];
+          return { jobId: concurrent.id, created: false };
         }
 
         await spendCredtis({
@@ -78,15 +79,10 @@ export const jobRouter = createTRPCRouter({
           sourceType: "job",
         });
 
-        return id;
+        return { jobId: id[0].jobId, created: true };
       });
 
-      if (!result) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create generation job.",
-        });
-      }
+      if (!result.created) return { jobId: result.jobId };
 
       try {
         await inngest.send({
@@ -113,33 +109,12 @@ export const jobRouter = createTRPCRouter({
             ? error.message
             : "Unknown Inngest dispatch error";
 
-        await ctx.db.transaction(async (tx) => {
-          const [job] = await tx
-            .update(jobsTable)
-            .set({
-              jobStatus: "failed",
-              dispatchError: message,
-              error: "Failed to start video generation.",
-            })
-            .where(eq(jobsTable.id, jobId))
-            .returning({
-              id: jobsTable.id,
-              userId: jobsTable.userId,
-              creditCost: jobsTable.creditCost,
-            });
-
-          if (!job) return;
-
-          await grantCredits({
-            tx,
-            userId: job.userId,
-            creditAmount: job.creditCost,
-            eventType: "job_refund",
-            metaData: { note: `Refund for job dispatch failed: ${job.id}` },
-            sourceId: `${job.id}_dispatch_refund`,
-            sourceType: "job",
-            transactionId: randomUUID(),
-          });
+        await failJobAndRefund({
+          jobId,
+          userId: ctx.userId,
+          safeError: "Failed to start video generation.",
+          internalError: message,
+          retryable: true,
         });
 
         throw new TRPCError({
@@ -149,7 +124,33 @@ export const jobRouter = createTRPCRouter({
         });
       }
 
-      return result;
+      return { jobId: result.jobId };
+    }),
+
+  getStatus: protectedProcedure
+    .input(z.object({ jobId: jobIdSchema }))
+    .query(async ({ ctx, input }) => {
+      const status = await ctx.db.query.jobsTable.findFirst({
+        where: (t, { and, eq }) =>
+          and(eq(t.id, input.jobId), eq(t.userId, ctx.userId)),
+        columns: {
+          id: true,
+          jobStatus: true,
+          currentStage: true,
+          safeError: true,
+          retryable: true,
+          generatingAt: true,
+          completedAt: true,
+          failedAt: true,
+          refundedAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (!status) throw new TRPCError({ code: "NOT_FOUND" });
+
+      return status;
     }),
 
   getManifest: protectedProcedure

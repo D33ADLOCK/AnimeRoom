@@ -2,10 +2,8 @@ import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewStat
 import type { inngest } from "./client";
 import type { GetStepTools } from "inngest";
 import { stateUpdateAndEmit } from "~/lib/pipeline/helper/stateUpdateAndEmit";
-import { db } from "~/server/db";
-import { jobsTable } from "~/server/db/schema";
-import { and, eq } from "drizzle-orm";
-import { safeRealtimeEmit } from "~/lib/realtime/safeRealtimeEmit";
+import { safeRealtimeChannelEmit } from "~/lib/realtime/safeRealtimeEmit";
+import { completeJob } from "~/server/jobs/jobLifecycle";
 
 type Step = GetStepTools<typeof inngest>;
 
@@ -66,23 +64,16 @@ export const finalisePipeline = async ({
   });
 
   await step.run("save-manifest-to-db", async () => {
-    await db
-      .update(jobsTable)
-      .set({
-        videoManifest: finalState,
-        metaData: {
-          battleTitle: finalState.data.meta.battleTitle,
-          shortSubtitle: finalState.data.meta.shortSubtitle,
-          thumbnailUrl: finalState.data.meta.thumbnailUrl!,
-        },
-        jobStatus: "complete",
-      })
-      .where(and(eq(jobsTable.id, jobId), eq(jobsTable.userId, userId)))
-      .returning({ jobs: jobsTable.id });
+    const completed = await completeJob({
+      jobId,
+      userId,
+      manifest: finalState,
+    });
+    if (!completed) throw new Error("Invalid lifecycle transition to complete");
   });
 
   await step.run("complete-pipeline", async () => {
-    await safeRealtimeEmit({
+    await safeRealtimeChannelEmit(`job:${jobId}`, {
       type: "completed",
       jobId,
       message: "Video Pipeline Completed",
