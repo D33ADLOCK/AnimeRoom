@@ -3,13 +3,14 @@ import { Readable } from "node:stream";
 import { Upload } from "@aws-sdk/lib-storage";
 import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
 import type { ReadableStream as NodeWebReadableStream } from "node:stream/web";
+import { env } from "~/env";
 
 export async function saveStreamToR2(
   stream: ReadableStream<Uint8Array> | Readable,
   filePath: string,
 ) {
-  const bucketName = process.env.R2_BUCKET_NAME!;
-  const baseUrl = process.env.R2_PUBLIC_BASE_URL!;
+  const bucketName = env.R2_BUCKET_NAME;
+  const baseUrl = env.R2_PUBLIC_BASE_URL;
 
   const publicURL = `${baseUrl}/${filePath}`;
 

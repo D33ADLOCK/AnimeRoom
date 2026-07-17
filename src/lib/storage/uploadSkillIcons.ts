@@ -10,9 +10,10 @@ import { readFile } from "fs/promises";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import path from "path";
 import { s3 } from "./client";
+import { env } from "~/env";
 
-const BUCKET = process.env.R2_BUCKET_NAME!;
-const BASE_URL = process.env.R2_PUBLIC_BASE_URL!;
+const BUCKET = env.R2_BUCKET_NAME;
+const BASE_URL = env.R2_PUBLIC_BASE_URL;
 const PUBLIC_DIR = path.resolve(process.cwd(), "public");
 
 const SKILL_ICONS = [

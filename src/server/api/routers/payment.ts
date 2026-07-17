@@ -9,12 +9,15 @@ import {
   type PaymentOrderMetadata,
 } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
+import { env } from "~/env";
 
 export const paymentRouter = createTRPCRouter({
   startPayment: protectedProcedure
     .input(z.object({ packageId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const productPackage = CREDIT_PACKAGE.find((p) => p.id === input.packageId);
+      const productPackage = CREDIT_PACKAGE.find(
+        (p) => p.id === input.packageId,
+      );
 
       if (!productPackage?.stripePriceId)
         throw new TRPCError({
@@ -56,8 +59,8 @@ export const paymentRouter = createTRPCRouter({
           paymentOrderId: paymentOrderId,
         },
         mode: "payment",
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
+        success_url: `${env.NEXT_PUBLIC_APP_URL}/payment/success`,
+        cancel_url: `${env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
       });
 
       const [updated] = await ctx.db

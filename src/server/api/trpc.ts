@@ -13,6 +13,7 @@ import { auth } from "@clerk/nextjs/server";
 import { TRPCError } from "@trpc/server";
 
 import { db } from "~/server/db";
+import { env } from "~/env";
 
 /**
  * 1. CONTEXT
@@ -119,8 +120,7 @@ export const protectedProcedure = t.procedure
   .use(enforceUserIsAuthed);
 
 export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  if (ctx.userId !== process.env.ADMIN_USER)
-    throw new TRPCError({ code: "FORBIDDEN" });
+  if (ctx.userId !== env.ADMIN_USER) throw new TRPCError({ code: "FORBIDDEN" });
 
   return next({ ctx });
 });

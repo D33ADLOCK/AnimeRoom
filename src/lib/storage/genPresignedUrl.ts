@@ -2,8 +2,9 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3 } from "./client";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { UPLOAD_URL_EXPIRY } from "../constant";
+import { env } from "~/env";
 
-const BUCKET = process.env.R2_BUCKET_NAME!;
+const BUCKET = env.R2_BUCKET_NAME;
 
 const READ_URL_EXPIRY = 60 * 60; // 1 hour in seconds
 

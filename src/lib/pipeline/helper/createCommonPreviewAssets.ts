@@ -1,6 +1,7 @@
 import type { LivePreviewStateSchema } from "../../realtime/job-event";
+import { env } from "~/env";
 
-const R2_BASE = process.env.R2_PUBLIC_BASE_URL!;
+const R2_BASE = env.R2_PUBLIC_BASE_URL;
 
 const ANNOUNCER_AUDIO_POOL = [
   `${R2_BASE}/common/audio/announcer/announcer-opening-2.mp3`,

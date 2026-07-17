@@ -1,7 +1,7 @@
 export default function Caption({ caption }: { caption: string }) {
   return (
-    <div className="top-0 left-0 absolute h-[20%] w-full p-4 flex justify-center items-center gap-4">
-      <div className="text-8xl text-black text-center leading-[1.1]">
+    <div className="absolute top-0 left-0 flex h-[20%] w-full items-center justify-center gap-4 p-4">
+      <div className="text-center text-8xl leading-[1.1] text-black">
         {caption}
       </div>
     </div>

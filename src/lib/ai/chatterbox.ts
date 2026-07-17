@@ -1,9 +1,10 @@
 import Replicate, { type FileOutput } from "replicate";
+import { env } from "~/env";
 
 const ELEVENLABS_FLASH = "elevenlabs/flash-v2.5";
 
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_IMAGE_API_TOKEN,
+  auth: env.REPLICATE_IMAGE_API_TOKEN,
 });
 
 export async function genAudio(text: string, referenceUrl: string) {

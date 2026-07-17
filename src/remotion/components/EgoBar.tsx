@@ -60,17 +60,17 @@ export default function EgoHudBar({
   const chipBarPcg = frame > chipStartFrame ? chipDrain : fillUp;
 
   return (
-    <div className="w-full px-12 mt-10">
+    <div className="mt-10 w-full px-12">
       {/* ─── Horizontal HUD Row ─── */}
       <div className="flex items-center gap-6">
         {/* ── Portrait ── */}
         <div
-          className="relative shrink-0 w-[150px] h-[150px] rounded-2xl overflow-hidden border-[4px] shadow-[0_0_25px_rgba(0,0,0,0.6)]"
+          className="relative h-[150px] w-[150px] shrink-0 overflow-hidden rounded-2xl border-[4px] shadow-[0_0_25px_rgba(0,0,0,0.6)]"
           style={{ borderColor: accentColor }}
         >
           <Img
             src={characterImage}
-            className="w-full h-full object-cover object-top"
+            className="h-full w-full object-cover object-top"
           />
           {/* Inner glow ring */}
           <div
@@ -82,10 +82,10 @@ export default function EgoHudBar({
         </div>
 
         {/* ── Name + Bar Stack ── */}
-        <div className="flex flex-col gap-3 flex-1 min-w-0">
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
           {/* Character Name */}
           <span
-            className="text-5xl font-black italic uppercase tracking-wider"
+            className="text-5xl font-black tracking-wider uppercase italic"
             style={{
               color: accentColor,
               textShadow:
@@ -110,7 +110,7 @@ export default function EgoHudBar({
             >
               {/* Red Chip Bar (behind green) */}
               <div
-                className="absolute left-0 top-0 h-full"
+                className="absolute top-0 left-0 h-full"
                 style={{
                   width: `${chipBarPcg}%`,
                   background: "linear-gradient(90deg, #FF3D3D, #FF6B6B)",
@@ -119,7 +119,7 @@ export default function EgoHudBar({
               />
               {/* Green Fill (in front) */}
               <div
-                className="absolute left-0 top-0 h-full"
+                className="absolute top-0 left-0 h-full"
                 style={{
                   width: `${egoBarPcg}%`,
                   background: barColor,
@@ -129,20 +129,20 @@ export default function EgoHudBar({
 
               {/* Surface Glint (top half shine) */}
               <div className="pointer-events-none absolute inset-0">
-                <div className="absolute left-0 top-0 h-1/2 w-full bg-gradient-to-b from-white/25 to-transparent" />
+                <div className="absolute top-0 left-0 h-1/2 w-full bg-gradient-to-b from-white/25 to-transparent" />
               </div>
 
               {/* Tick Marks */}
               <div className="pointer-events-none absolute inset-0 flex justify-between px-2">
                 {Array.from({ length: 20 }).map((_, i) => (
-                  <div key={i} className="w-[1px] h-full bg-white/15" />
+                  <div key={i} className="h-full w-[1px] bg-white/15" />
                 ))}
               </div>
 
               {/* Percentage Label */}
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <div className="absolute top-1/2 right-4 flex -translate-y-1/2 items-center gap-1">
                 <span
-                  className="text-3xl font-black italic font-mono text-white"
+                  className="font-mono text-3xl font-black text-white italic"
                   style={{
                     textShadow:
                       "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000",
@@ -156,7 +156,7 @@ export default function EgoHudBar({
 
           {/* ── "EGO" label beneath the bar ── */}
           <span
-            className="text-3xl uppercase tracking-[0.35em] text-black pl-1"
+            className="pl-1 text-3xl tracking-[0.35em] text-black uppercase"
             style={{
               textShadow: "0 2px 4px rgba(0,0,0,0.6)",
             }}

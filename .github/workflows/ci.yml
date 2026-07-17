@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/animeroom
+      CLERK_SECRET_KEY: clerk_secret_ci_placeholder
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: clerk_publishable_ci_placeholder
+      NEXT_PUBLIC_APP_URL: https://ci.animeroom.example
+      UPSTASH_REDIS_REST_URL: https://redis.example.com
+      UPSTASH_REDIS_REST_TOKEN: redis_ci_placeholder
+      R2_Access_Key_ID: r2_access_ci_placeholder
+      R2_Secret_Access_Key: r2_secret_ci_placeholder
+      R2_BUCKET_NAME: animeroom-ci
+      R2_PUBLIC_BASE_URL: https://cdn.example.com
+      REPLICATE_IMAGE_API_TOKEN: replicate_ci_placeholder
+      GOOGLE_GENERATIVE_AI_API_KEY: google_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder
+      STRIPE_STARTER_PACK_PRICE_ID: price_ci_placeholder
+      ADMIN_USER: user_ci_admin
+      REMOTION_FUNCTION_NAME: remotion-render-ci
+      REMOTION_SERVE_URL: https://remotion.example.com/site.zip
+      INNGEST_SIGNING_KEY: signkey-test-ci-placeholder
+      INNGEST_EVENT_KEY: eventkey-test-ci-placeholder
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm audit --audit-level high

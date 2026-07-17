@@ -1,4 +1,6 @@
-const R2_BASE = process.env.R2_PUBLIC_BASE_URL!;
+import { env } from "~/env";
+
+const R2_BASE = env.R2_PUBLIC_BASE_URL;
 
 export const VOICE_IDS = {
   character1: "yoZ06aMxZJJ28mfd3POQ",
@@ -45,8 +47,8 @@ export const ALLOWED_SIZE = {
 };
 
 export const DEFAULT_VOICE_REF = {
-  character1: `${process.env.R2_PUBLIC_BASE_URL!}/references/0073220e1dc738a5/7c6fac23-1843-4787-aab8-839f3d407f70.mp3`,
-  character2: `${process.env.R2_PUBLIC_BASE_URL!}/references/0073220e1dc738a5/602c57c3-9692-4d6d-accf-26411eb19c97.mp3`,
+  character1: `${env.R2_PUBLIC_BASE_URL}/references/0073220e1dc738a5/7c6fac23-1843-4787-aab8-839f3d407f70.mp3`,
+  character2: `${env.R2_PUBLIC_BASE_URL}/references/0073220e1dc738a5/602c57c3-9692-4d6d-accf-26411eb19c97.mp3`,
 };
 
 export const ANNOUNCER_AUDIO_POOL = [
