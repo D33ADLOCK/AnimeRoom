@@ -7,7 +7,6 @@ const isPublicRoute = createRouteMatcher([
   "/api/inngest(.*)",
   "/videos/discover(.*)",
   "/api/trpc/job.getPublicManifest(.*)",
-  "/api/trpc/job.getPublicManifest(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

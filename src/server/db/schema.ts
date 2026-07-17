@@ -22,6 +22,9 @@ export const jobStatus = [
 
 export type JobStatusType = (typeof jobStatus)[number];
 
+export const jobVisibility = ["private", "published"] as const;
+export type JobVisibilityType = (typeof jobVisibility)[number];
+
 export type AssetReferences = {
   character1?: { voiceAssetId?: string | null; imageAssetId?: string | null };
   character2?: { voiceAssetId?: string | null; imageAssetId?: string | null };
@@ -32,6 +35,10 @@ export const jobsTable = createTable("jobs", {
   userId: text("user_id").notNull(),
   prompt: text("prompt").notNull(),
   jobStatus: text("job_status").$type<JobStatusType>().notNull(),
+  visibility: text("visibility")
+    .$type<JobVisibilityType>()
+    .default("private")
+    .notNull(),
   assetReferences: jsonb("asset_references").$type<AssetReferences>(),
   videoManifest: jsonb("videoManifest").$type<LiveStateType>(),
   metaData: jsonb("meta_data").$type<{
