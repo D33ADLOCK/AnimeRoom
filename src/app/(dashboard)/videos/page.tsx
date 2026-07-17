@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { api } from "~/trpc/server";
 import { Video, Play } from "lucide-react";
+import { VisibilityControl } from "./visibilityControl";
 
 export default async function Page() {
   const myVideos = (await api.job.getMyVideos()) ?? [];
@@ -93,13 +94,15 @@ export default async function Page() {
           {myVideos.map((v, index) => {
             const theme = cardThemes[index % cardThemes.length];
             return (
-              <Link
-                href={`/videos/${v.id}`}
+              <article
                 key={v.id}
                 className="nb-card group relative flex flex-col overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:shadow-[4px_4px_0px_var(--color-nb-shadow)] sm:hover:-translate-y-2 sm:hover:shadow-[8px_8px_0px_var(--color-nb-shadow)]"
               >
                 {/* Thumbnail Container (9:16 aspect ratio for vertical video) */}
-                <div className="relative aspect-[9/16] w-full overflow-hidden border-b-[2px] border-[var(--color-nb-border)] bg-[var(--color-nb-blue)] sm:border-b-[3px]">
+                <Link
+                  href={`/videos/${v.id}`}
+                  className="relative block aspect-[9/16] w-full overflow-hidden border-b-[2px] border-[var(--color-nb-border)] bg-[var(--color-nb-blue)] sm:border-b-[3px]"
+                >
                   {v.metaData?.thumbnailUrl ? (
                     <Image
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -123,7 +126,7 @@ export default async function Page() {
                       <Play className="ml-1 h-6 w-6 fill-[var(--color-nb-text)] sm:h-8 sm:w-8" />
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 {/* Card Content Footer */}
                 <div
@@ -146,11 +149,14 @@ export default async function Page() {
                     </div>
 
                     <h3 className="line-clamp-1 text-base font-black uppercase sm:text-sm">
-                      {v.metaData?.battleTitle}
+                      <Link href={`/videos/${v.id}`}>
+                        {v.metaData?.battleTitle}
+                      </Link>
                     </h3>
                   </div>
+                  <VisibilityControl jobId={v.id} visibility={v.visibility} />
                 </div>
-              </Link>
+              </article>
             );
           })}
         </div>

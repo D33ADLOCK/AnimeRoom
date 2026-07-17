@@ -10,7 +10,7 @@ import {
   startVideoRender,
   getVideoRenderProgress,
 } from "~/lib/remotionLambda/renderVideo";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
@@ -64,7 +64,9 @@ export const jobRouter = createTRPCRouter({
           .where(eq(jobsTable.id, jobId));
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Unknown Inngest dispatch error";
+          error instanceof Error
+            ? error.message
+            : "Unknown Inngest dispatch error";
 
         await ctx.db.transaction(async (tx) => {
           const [job] = await tx
@@ -164,6 +166,7 @@ export const jobRouter = createTRPCRouter({
         id: true,
         createdAt: true,
         metaData: true,
+        visibility: true,
       },
       orderBy: (t, { desc }) => desc(t.createdAt),
     });
@@ -171,7 +174,8 @@ export const jobRouter = createTRPCRouter({
 
   getDiscoverVideos: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.query.jobsTable.findMany({
-      where: (t, { eq }) => eq(t.jobStatus, "complete"),
+      where: (t, { eq, and }) =>
+        and(eq(t.jobStatus, "complete"), eq(t.visibility, "published")),
       columns: {
         id: true,
         createdAt: true,
@@ -186,11 +190,45 @@ export const jobRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const videoManifest = await ctx.db.query.jobsTable.findFirst({
         where: (t, { eq, and }) =>
-          and(eq(t.id, input.jobId), eq(t.jobStatus, "complete")),
+          and(
+            eq(t.id, input.jobId),
+            eq(t.jobStatus, "complete"),
+            eq(t.visibility, "published"),
+          ),
         columns: { videoManifest: true },
       });
 
       return videoManifest?.videoManifest ?? null;
+    }),
+
+  setVisibility: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string().uuid(),
+        visibility: z.enum(["private", "published"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [job] = await ctx.db
+        .update(jobsTable)
+        .set({ visibility: input.visibility })
+        .where(
+          and(
+            eq(jobsTable.id, input.jobId),
+            eq(jobsTable.userId, ctx.userId),
+            eq(jobsTable.jobStatus, "complete"),
+          ),
+        )
+        .returning({
+          id: jobsTable.id,
+          visibility: jobsTable.visibility,
+        });
+
+      if (!job) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      return job;
     }),
 
   startExport: protectedProcedure
