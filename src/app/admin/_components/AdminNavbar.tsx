@@ -19,7 +19,7 @@ export default function AdminNavbar() {
               priority
             />
           </div>
-          <span className="text-lg font-extrabold uppercase tracking-tight">
+          <span className="text-lg font-extrabold tracking-tight uppercase">
             AnimeRoom
           </span>
         </Link>
@@ -27,7 +27,7 @@ export default function AdminNavbar() {
         <div className="ml-auto flex items-center gap-3">
           <Link
             href="/"
-            className="border-[3px] border-[var(--color-nb-border)] px-4 py-1.5 text-sm font-extrabold uppercase tracking-wider shadow-[4px_4px_0px_var(--color-nb-shadow)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_var(--color-nb-shadow)]"
+            className="border-[3px] border-[var(--color-nb-border)] px-4 py-1.5 text-sm font-extrabold tracking-wider uppercase shadow-[4px_4px_0px_var(--color-nb-shadow)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_var(--color-nb-shadow)]"
           >
             ← Dashboard
           </Link>

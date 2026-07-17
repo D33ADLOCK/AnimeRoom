@@ -39,10 +39,7 @@ function VideoSlot({
         {/* Player */}
         <div className="absolute inset-0 h-full w-full">
           {manifest && (
-            <DiscoverPlayer
-              videoManifest={manifest}
-              isActive={isActive}
-            />
+            <DiscoverPlayer videoManifest={manifest} isActive={isActive} />
           )}
         </div>
 

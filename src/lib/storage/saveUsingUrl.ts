@@ -1,5 +1,6 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { s3 } from "./client";
+import { env } from "~/env";
 
 export async function saveToR2UsingUrl({
   url,
@@ -8,8 +9,8 @@ export async function saveToR2UsingUrl({
   url: string;
   fileName: string;
 }) {
-  const baseUrl = process.env.R2_PUBLIC_BASE_URL!;
-  const BUCKET = process.env.R2_BUCKET_NAME!;
+  const baseUrl = env.R2_PUBLIC_BASE_URL;
+  const BUCKET = env.R2_BUCKET_NAME;
 
   const publicUrl = `${baseUrl}/${fileName}`;
 

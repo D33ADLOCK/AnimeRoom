@@ -1,10 +1,11 @@
 import Replicate, { type FileOutput } from "replicate";
+import { env } from "~/env";
 
 const BG_MODEL =
   "cjwbw/rembg:fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003";
 
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_IMAGE_API_TOKEN,
+  auth: env.REPLICATE_IMAGE_API_TOKEN,
 });
 
 export const removeBg = async (imageUrl: URL) => {

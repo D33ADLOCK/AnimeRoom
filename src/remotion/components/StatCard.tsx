@@ -10,14 +10,14 @@ const stats = [
 
 export default function StatCard() {
   return (
-    <div className="relative h-full w-full flex items-center justify-center p-6">
+    <div className="relative flex h-full w-full items-center justify-center p-6">
       {/* Enhanced Glassmorphism Container */}
-      <div className="relative w-full overflow-hidden rounded-[40px] border-2 border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-3xl p-10 shadow-[0_40px_100px_rgba(0,0,0,0.6)]">
+      <div className="relative w-full overflow-hidden rounded-[40px] border-2 border-white/20 bg-gradient-to-br from-white/10 to-white/5 p-10 shadow-[0_40px_100px_rgba(0,0,0,0.6)] backdrop-blur-3xl">
         {/* Glossy Top Edge Highlight */}
         <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
 
         {/* Decorative Corner Glow */}
-        <div className="absolute -left-20 -top-20 h-60 w-60 rounded-full bg-white/5 blur-[100px]" />
+        <div className="absolute -top-20 -left-20 h-60 w-60 rounded-full bg-white/5 blur-[100px]" />
 
         <StatsDetails />
       </div>
@@ -54,11 +54,11 @@ function StatRow({
   const progressBar = progress * value;
 
   return (
-    <div className="flex flex-col gap-4 w-full group">
+    <div className="group flex w-full flex-col gap-4">
       {/* Label and Percentage */}
-      <div className="flex justify-between items-end px-1">
+      <div className="flex items-end justify-between px-1">
         <span
-          className="text-4xl font-black italic text-white tracking-tighter uppercase"
+          className="text-4xl font-black tracking-tighter text-white uppercase italic"
           style={{
             textShadow: `
               -2px -2px 0 #000,  
@@ -71,9 +71,9 @@ function StatRow({
         >
           {label}
         </span>
-        <div className="flex items-center justify-center px-4 py-1 rounded-full bg-black/60 border border-white/20 shadow-lg backdrop-blur-md">
+        <div className="flex items-center justify-center rounded-full border border-white/20 bg-black/60 px-4 py-1 shadow-lg backdrop-blur-md">
           <span
-            className="text-4xl font-black italic font-mono tracking-tighter"
+            className="font-mono text-4xl font-black tracking-tighter italic"
             style={{
               color,
               textShadow: `
@@ -91,11 +91,11 @@ function StatRow({
       </div>
 
       {/* Progress Bar Track */}
-      <div className="relative h-10 w-full overflow-hidden rounded-xl bg-black/50 border-2 border-white/10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]">
+      <div className="relative h-10 w-full overflow-hidden rounded-xl border-2 border-white/10 bg-black/50 shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]">
         {/* Fill Segment Markers (Subtle vertical lines every 10%) */}
-        <div className="absolute inset-0 flex justify-between px-0 opacity-20 pointer-events-none z-10">
+        <div className="pointer-events-none absolute inset-0 z-10 flex justify-between px-0 opacity-20">
           {Array.from({ length: 11 }).map((_, i) => (
-            <div key={i} className="w-[1px] h-full bg-white/40" />
+            <div key={i} className="h-full w-[1px] bg-white/40" />
           ))}
         </div>
 
@@ -112,7 +112,7 @@ function StatRow({
           <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-black/30 opacity-60" />
 
           {/* Animated Shine Beam (Can be enabled later, or leave as static glint) */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-1/2" />
+          <div className="absolute inset-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
         </div>
       </div>
     </div>
@@ -121,7 +121,7 @@ function StatRow({
 
 function StatsDetails() {
   return (
-    <div className="flex flex-col gap-10 w-full py-4">
+    <div className="flex w-full flex-col gap-10 py-4">
       {stats.map((stat, i) => (
         <StatRow
           key={`${stat.label}-${i}`}

@@ -3,10 +3,10 @@
 import { S3Client } from "@aws-sdk/client-s3";
 
 import "dotenv/config";
+import { env } from "~/env";
 
-const accessKeyId = process.env.R2_Access_Key_ID;
-const secretAccessKey = process.env.R2_Secret_Access_Key;
-if (!accessKeyId || !secretAccessKey) throw new Error("Missing R2 credentials");
+const accessKeyId = env.R2_Access_Key_ID;
+const secretAccessKey = env.R2_Secret_Access_Key;
 
 export const s3 = new S3Client({
   region: "auto",

@@ -3,8 +3,9 @@ import { s3 } from "./client";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import path from "path";
+import { env } from "~/env";
 
-const BUCKET = process.env.R2_BUCKET_NAME!;
+const BUCKET = env.R2_BUCKET_NAME;
 const REFERENCE_KEY = "gogeta-front-trimmed.png";
 
 /**
@@ -15,7 +16,7 @@ export const uploadLocalImageToR2 = async (
   localRelativePath: string,
   r2Key: string,
 ) => {
-  const baseUrl = process.env.R2_PUBLIC_BASE_URL!;
+  const baseUrl = env.R2_PUBLIC_BASE_URL;
   const fullPath = path.resolve(process.cwd(), localRelativePath);
   const body = await readFile(fullPath);
 

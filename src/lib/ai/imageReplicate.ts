@@ -1,9 +1,10 @@
 import Replicate, { type FileOutput } from "replicate";
+import { env } from "~/env";
 
 const FAST_iMAGE_MODEL = "prunaai/z-image-turbo";
 
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_IMAGE_API_TOKEN,
+  auth: env.REPLICATE_IMAGE_API_TOKEN,
 });
 
 export const genImage = async (prompt: string, url: string) => {

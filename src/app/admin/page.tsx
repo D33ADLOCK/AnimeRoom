@@ -2,11 +2,12 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import AdminPanel from "./_components/AdminPanel";
 import AdminNavbar from "./_components/AdminNavbar";
+import { env } from "~/env";
 
 export default async function AdminPage() {
   const { userId } = await auth();
 
-  if (userId !== process.env.ADMIN_USER) {
+  if (userId !== env.ADMIN_USER) {
     redirect("/");
   }
 
@@ -15,7 +16,7 @@ export default async function AdminPage() {
       <AdminNavbar />
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="mb-8 border-b-[3px] border-[var(--color-nb-border)] pb-4">
-          <h1 className="text-3xl font-extrabold uppercase tracking-tight">
+          <h1 className="text-3xl font-extrabold tracking-tight uppercase">
             Admin Panel
           </h1>
           <p className="mt-1 text-sm font-semibold text-[var(--color-nb-text)]/60">

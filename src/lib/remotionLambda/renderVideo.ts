@@ -3,6 +3,7 @@ import {
   getRenderProgress,
 } from "@remotion/lambda/client";
 import type { LiveStateType } from "~/lib/pipeline/helper/createEmptyPreviewState";
+import { env } from "~/env";
 
 export async function startVideoRender({
   finalJobState,
@@ -13,8 +14,8 @@ export async function startVideoRender({
 }) {
   const { renderId, bucketName } = await renderMediaOnLambda({
     region: "us-east-1",
-    functionName: process.env.REMOTION_FUNCTION_NAME!,
-    serveUrl: process.env.REMOTION_SERVE_URL!,
+    functionName: env.REMOTION_FUNCTION_NAME,
+    serveUrl: env.REMOTION_SERVE_URL,
     composition: "AnimeRoom",
     inputProps: finalJobState,
     codec: "h264",
@@ -34,7 +35,7 @@ export async function getVideoRenderProgress({
   return await getRenderProgress({
     renderId,
     bucketName,
-    functionName: process.env.REMOTION_FUNCTION_NAME!,
+    functionName: env.REMOTION_FUNCTION_NAME,
     region: "us-east-1",
   });
 }

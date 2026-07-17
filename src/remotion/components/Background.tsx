@@ -14,7 +14,7 @@ export default function BackgroundSlate({
       src={background}
       width={width}
       height={height}
-      className="h-full w-full object-cover absolute"
+      className="absolute h-full w-full object-cover"
     />
   );
 }

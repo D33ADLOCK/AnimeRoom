@@ -121,7 +121,6 @@ export default function DiscoverGrid({ allVideos }: DiscoverGridType) {
             </button>
           );
         })}
-
       </div>
 
       {currentIndex !== null && (

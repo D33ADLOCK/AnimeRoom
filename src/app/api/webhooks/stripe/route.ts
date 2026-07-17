@@ -8,11 +8,12 @@ import {
   paymentOrdersTable,
   type PaymentOrderMetadata,
 } from "~/server/db/schema";
+import { env } from "~/env";
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
   const signature = req.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 
   if (!signature || !webhookSecret) {
     return new Response("Missing webhook verification data", { status: 400 });
@@ -115,7 +116,10 @@ export async function POST(req: NextRequest) {
           .for("update");
 
         if (!currentOrder) return;
-        if (currentOrder.status === "paid" || currentOrder.status === "failed") {
+        if (
+          currentOrder.status === "paid" ||
+          currentOrder.status === "failed"
+        ) {
           return;
         }
 

@@ -147,12 +147,12 @@ export default function Home() {
                 className="nb-card flex flex-col gap-3 p-5 transition-transform hover:-translate-y-1"
               >
                 <div
-                  className={`${f.color} nb-border inline-flex h-12 w-12 items-center justify-center nb-shadow-sm`}
+                  className={`${f.color} nb-border nb-shadow-sm inline-flex h-12 w-12 items-center justify-center`}
                 >
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="text-lg font-extrabold uppercase">{f.title}</h3>
-                <p className="text-sm font-semibold leading-relaxed text-[var(--color-nb-text)]/60">
+                <p className="text-sm leading-relaxed font-semibold text-[var(--color-nb-text)]/60">
                   {f.desc}
                 </p>
               </div>
@@ -176,12 +176,12 @@ export default function Home() {
           {steps.map((s) => (
             <div key={s.num} className="nb-card flex flex-col gap-4 p-6">
               <div
-                className={`${s.color} nb-border inline-flex h-14 w-14 items-center justify-center text-2xl font-black nb-shadow-sm`}
+                className={`${s.color} nb-border nb-shadow-sm inline-flex h-14 w-14 items-center justify-center text-2xl font-black`}
               >
                 {s.num}
               </div>
               <h3 className="text-xl font-extrabold uppercase">{s.title}</h3>
-              <p className="text-sm font-semibold leading-relaxed text-[var(--color-nb-text)]/60">
+              <p className="text-sm leading-relaxed font-semibold text-[var(--color-nb-text)]/60">
                 {s.desc}
               </p>
             </div>
@@ -196,8 +196,8 @@ export default function Home() {
             Ready to Roast?
           </h2>
           <p className="font-semibold text-[var(--color-nb-text)]/70">
-            Pick two characters, hit create, and watch AI generate an
-            entire cinematic roast battle in real-time.
+            Pick two characters, hit create, and watch AI generate an entire
+            cinematic roast battle in real-time.
           </p>
           <Link
             href="/create"

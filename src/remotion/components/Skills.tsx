@@ -1,9 +1,4 @@
-import {
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from "remotion";
+import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
 type SkillItem = {
   name: string;
@@ -18,10 +13,10 @@ type SkillsProp = {
 
 export default function Skills({ skills }: SkillsProp) {
   return (
-    <div className="relative h-auto w-full flex items-center justify-center p-6">
+    <div className="relative flex h-auto w-full items-center justify-center p-6">
       {/* Tactical Angled Container - Dark Theme */}
       <div
-        className="relative w-full overflow-hidden bg-slate-950/80 backdrop-blur-3xl p-8 shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
+        className="relative w-full overflow-hidden bg-slate-950/80 p-8 shadow-[0_40px_100px_rgba(0,0,0,0.8)] backdrop-blur-3xl"
         style={{
           clipPath:
             "polygon(0 8%, 4% 0, 96% 0, 100% 8%, 100% 92%, 96% 100%, 4% 100%, 0 92%)",
@@ -37,7 +32,7 @@ export default function Skills({ skills }: SkillsProp) {
 function SkillIcon({ letter, color }: { letter: string; color: string }) {
   return (
     <div
-      className="w-20 h-20 flex items-center justify-center rounded-xl border-4 rotate-3 shadow-lg"
+      className="flex h-20 w-20 rotate-3 items-center justify-center rounded-xl border-4 shadow-lg"
       style={{
         borderColor: color,
         backgroundColor: `${color}33`,
@@ -94,13 +89,13 @@ function SkillBlock({
         opacity,
         transform: `translateY(${translateY}px)`,
       }}
-      className="flex flex-col gap-4 w-1/2 p-5 border-2 border-white/10 bg-black/40 rounded-2xl"
+      className="flex w-1/2 flex-col gap-4 rounded-2xl border-2 border-white/10 bg-black/40 p-5"
     >
       <div className="flex items-center gap-6">
         <SkillIcon letter={letter} color={color} />
         <div className="flex flex-col">
           <span
-            className="text-4xl font-black italic uppercase tracking-tighter"
+            className="text-4xl font-black tracking-tighter uppercase italic"
             style={{
               color,
               textShadow:
@@ -109,10 +104,10 @@ function SkillBlock({
           >
             {name}
           </span>
-          <div className="h-[3px] w-full bg-gradient-to-r from-white/60 to-transparent mt-1" />
+          <div className="mt-1 h-[3px] w-full bg-gradient-to-r from-white/60 to-transparent" />
         </div>
       </div>
-      <p className="text-2xl text-white/90 font-bold leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+      <p className="text-2xl leading-relaxed font-bold text-white/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
         {desc}
       </p>
     </div>
@@ -121,12 +116,12 @@ function SkillBlock({
 
 function SkillsLayout({ skills }: SkillsProp) {
   return (
-    <div className="flex flex-col gap-8 relative z-10">
+    <div className="relative z-10 flex flex-col gap-8">
       {/* Header */}
       <div className="flex items-center justify-center gap-4">
         <div className="h-[3px] flex-1 bg-gradient-to-r from-transparent via-white/40 to-white/10" />
         <h2
-          className="text-5xl font-black italic uppercase tracking-[0.25em] text-white"
+          className="text-5xl font-black tracking-[0.25em] text-white uppercase italic"
           style={{
             textShadow:
               "-3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 0 20px rgba(255,255,255,0.4)",
@@ -138,7 +133,7 @@ function SkillsLayout({ skills }: SkillsProp) {
       </div>
 
       {/* Main Skills Grid */}
-      <div className="flex gap-6 w-full">
+      <div className="flex w-full gap-6">
         {skills.map((skill, index) => (
           <SkillBlock
             key={index}

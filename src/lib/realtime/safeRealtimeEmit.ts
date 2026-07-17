@@ -9,10 +9,7 @@ export async function safeRealtimeEmit(data: JobEvent) {
   }
 }
 
-export async function safeRealtimeChannelEmit(
-  channel: string,
-  data: JobEvent,
-) {
+export async function safeRealtimeChannelEmit(channel: string, data: JobEvent) {
   try {
     await realtime.channel(channel).emit("pipeline-events", data);
   } catch (error) {
