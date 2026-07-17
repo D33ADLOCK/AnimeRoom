@@ -4,13 +4,13 @@ import { characterBundle } from "./characterBundle";
 import { roundBundle } from "./roundBundle";
 import { metaBundle } from "./metaBundle";
 import { finalisePipeline } from "./finalisePipeline";
-import { db } from "~/server/db";
-import { jobsTable } from "~/server/db/schema";
-import { and, eq } from "drizzle-orm";
-import { grantCredits } from "~/server/credits/creditHelper";
-import { randomUUID } from "crypto";
-import { safeRealtimeEmit } from "~/lib/realtime/safeRealtimeEmit";
+import { safeRealtimeChannelEmit } from "~/lib/realtime/safeRealtimeEmit";
 import { COST_GUARDRAILS } from "~/server/guardrails/rateLimit";
+import {
+  failJobAndRefund,
+  markJobGenerating,
+  updateJobStage,
+} from "~/server/jobs/jobLifecycle";
 
 export const generateVideo = inngest.createFunction(
   {
@@ -26,56 +26,43 @@ export const generateVideo = inngest.createFunction(
     triggers: [jobCreated],
 
     onFailure: async ({ event }) => {
-      const originalEvent = event.data.event as {
-        data: JobCreatedData;
+      const failureData = event.data as {
+        event: { data: JobCreatedData };
+        error?: unknown;
       };
 
-      const { jobId, userId } = originalEvent.data;
+      const { jobId, userId } = failureData.event.data;
+      const serializedError = failureData.error
+        ? JSON.stringify(failureData.error)
+        : null;
+      const diagnostic =
+        serializedError?.slice(0, 4_000) ??
+        "Inngest generation pipeline exhausted retries.";
 
-      await db.transaction(async (tx) => {
-        const [job] = await tx
-          .update(jobsTable)
-          .set({ jobStatus: "failed" })
-          .where(and(eq(jobsTable.id, jobId), eq(jobsTable.userId, userId)))
-          .returning({ creditCost: jobsTable.creditCost, id: jobsTable.id });
+      const result = await failJobAndRefund({
+        jobId,
+        userId,
+        safeError: "Something went wrong generating your video.",
+        internalError: diagnostic,
+        retryable: true,
+      });
 
-        await grantCredits({
-          tx,
-          creditAmount: job!.creditCost ?? 1,
-          eventType: "job_refund",
-          sourceId: `${job!.id}_refund`,
-          sourceType: "job",
-          transactionId: randomUUID(),
-          metaData: { note: `Refund for job failed: ${job!.id}` },
-          userId: userId,
+      if (result.transitioned) {
+        await safeRealtimeChannelEmit(`job:${jobId}`, {
+          type: "error",
+          jobId,
+          code: "ASSET_PIPELINE_CRASH",
+          message:
+            "Something went wrong generating your video. Please try again.",
         });
-      });
-
-      await safeRealtimeEmit({
-        type: "error",
-        code: "ASSET_PIPELINE_CRASH",
-        message:
-          "Something went wrong generating your video. Please try again.",
-      });
+      }
     },
   },
   async ({ event, step }) => {
     const { jobId, prompt, userId } = event.data;
 
     const shouldContinue = await step.run("mark-job-generating", async () => {
-      const [job] = await db
-        .update(jobsTable)
-        .set({ jobStatus: "generating" })
-        .where(
-          and(
-            eq(jobsTable.id, jobId),
-            eq(jobsTable.userId, userId),
-            eq(jobsTable.jobStatus, "queued"),
-          ),
-        )
-        .returning({ jobStatus: jobsTable.jobStatus });
-
-      return job?.jobStatus === "generating";
+      return markJobGenerating({ jobId, userId });
     });
 
     if (!shouldContinue) return;
@@ -84,7 +71,9 @@ export const generateVideo = inngest.createFunction(
 
     const r2Promise: Promise<{ key: string; url: string }>[] = [];
 
-    // Character Bundle
+    await step.run("stage-characters", () =>
+      updateJobStage({ jobId, userId, stage: "characters" }),
+    );
     await characterBundle({
       prompt: prompt,
       liveState: liveState,
@@ -93,7 +82,9 @@ export const generateVideo = inngest.createFunction(
       step: step,
     });
 
-    // Rounds Script
+    await step.run("stage-rounds", () =>
+      updateJobStage({ jobId, userId, stage: "rounds" }),
+    );
     await roundBundle({
       prompt,
       jobId,
@@ -102,7 +93,14 @@ export const generateVideo = inngest.createFunction(
       step,
     });
 
+    await step.run("stage-metadata", () =>
+      updateJobStage({ jobId, userId, stage: "metadata" }),
+    );
     await metaBundle({ prompt, jobId, liveState, r2Promise, step });
+
+    await step.run("stage-finalizing", () =>
+      updateJobStage({ jobId, userId, stage: "finalizing" }),
+    );
 
     await finalisePipeline({
       jobId,
