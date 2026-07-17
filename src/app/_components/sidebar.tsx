@@ -1,17 +1,12 @@
 "use client";
 
-import { SignedIn, UserButton } from "@clerk/nextjs";
+import { SignedIn, UserButton, useUser } from "@clerk/nextjs";
 import {
   ChevronDown,
   CreditCard,
   Compass,
-  Info,
   LifeBuoy,
-  Palette,
-  Settings,
-  Smile,
   Sparkles,
-  Trash2,
   Video,
 } from "lucide-react";
 import Image from "next/image";
@@ -51,17 +46,9 @@ const videosSubItems = [
   { title: "My Videos", href: "/videos", icon: Video },
 ];
 
-const navItems = [
-  { title: "Characters", href: "/characters", icon: Smile },
-  { title: "Themes", href: "/themes", icon: Palette },
-  { title: "Deleted", href: "/deleted", icon: Trash2 },
-  { title: "About", href: "/about", icon: Info },
-];
-
 const secondaryItems = [
   { title: "Billing", href: "/billing", icon: CreditCard },
   { title: "Support", href: "/support", icon: LifeBuoy },
-  { title: "Settings", href: "/settings", icon: Settings },
 ];
 
 /* ─── Component ─── */
@@ -69,6 +56,8 @@ const secondaryItems = [
 function AppSidebar() {
   const pathName = usePathname();
   const isVideosActive = pathName.startsWith("/videos");
+  const { user } = useUser();
+  const displayName = user?.fullName ?? user?.username ?? "Your Account";
 
   return (
     <Sidebar collapsible="offcanvas" variant="sidebar" className="border-r-0">
@@ -164,27 +153,6 @@ function AppSidebar() {
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
-
-              {/* Rest of nav items */}
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathName === item.href;
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      size="lg"
-                      asChild
-                      isActive={isActive}
-                      className="rounded-none border-[3px] border-[var(--color-nb-border)] font-bold hover:bg-[var(--color-nb-mint)]"
-                    >
-                      <Link href={item.href}>
-                        <Icon className="h-5 w-5!" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -231,7 +199,7 @@ function AppSidebar() {
             </div>
             <div className="group-data-[collapsible=icon]:hidden">
               <p className="text-sm leading-tight font-extrabold">
-                Rishabh Singh
+                {displayName}
               </p>
               <p className="flex items-center gap-1 text-xs font-bold">
                 <Sparkles className="h-3 w-3" /> Upgrade

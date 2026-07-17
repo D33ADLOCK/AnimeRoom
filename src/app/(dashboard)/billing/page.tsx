@@ -1,4 +1,5 @@
 import { Zap, Gift, Check, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { CREDIT_PACKAGE } from "~/config/credits/package";
 import BuyButton from "./buyButton";
 
@@ -159,9 +160,20 @@ export default function BillingPage() {
       </div>
 
       {/* Footer Note */}
-      <div className="mt-2 mb-2 flex justify-center">
+      <div className="mt-2 mb-2 flex flex-col items-center gap-2">
         <p className="max-w-md text-center text-[11px] font-bold text-black/50 sm:text-xs">
           Payments processed via Stripe. Zero hidden fees or recurring charges.
+        </p>
+        <p className="max-w-md text-center text-[11px] font-bold text-black/50 sm:text-xs">
+          By purchasing, you agree to our{" "}
+          <Link href="/legal/terms" className="underline hover:text-black">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/legal/refund" className="underline hover:text-black">
+            Refund Policy
+          </Link>
+          .
         </p>
       </div>
     </div>
