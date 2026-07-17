@@ -208,6 +208,40 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* ─── Footer ─── */}
+      <footer className="flex flex-col items-center gap-2 border-t-[3px] border-[var(--color-nb-border)] pt-6 text-center">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-bold text-[var(--color-nb-text)]/60 uppercase">
+          <Link
+            href="/legal/terms"
+            className="hover:text-[var(--color-nb-text)] hover:underline"
+          >
+            Terms
+          </Link>
+          <Link
+            href="/legal/privacy"
+            className="hover:text-[var(--color-nb-text)] hover:underline"
+          >
+            Privacy
+          </Link>
+          <Link
+            href="/legal/refund"
+            className="hover:text-[var(--color-nb-text)] hover:underline"
+          >
+            Refunds
+          </Link>
+          <Link
+            href="/support"
+            className="hover:text-[var(--color-nb-text)] hover:underline"
+          >
+            Support
+          </Link>
+        </div>
+        <p className="text-[11px] font-semibold text-[var(--color-nb-text)]/40">
+          AnimeRoom is a fan-made, independent project. Not affiliated with,
+          endorsed by, or sponsored by any anime studio or rights holder.
+        </p>
+      </footer>
     </div>
   );
 }
