@@ -63,6 +63,9 @@ export const roundBundle = async ({
     const imageCache: Record<string, string> = {};
 
     for await (const round of roundScript) {
+      if (roundIndex >= liveState.data.rounds.length) {
+        throw new Error("Generation returned more than six rounds");
+      }
       const voice =
         round.attacker === "character1" ? character1Voice : character2Voice;
       const opponent =
@@ -115,6 +118,12 @@ export const roundBundle = async ({
       });
 
       roundIndex++;
+    }
+
+    if (roundIndex !== liveState.data.rounds.length) {
+      throw new Error(
+        `Generation returned ${roundIndex} rounds; exactly six are required`,
+      );
     }
 
     // Return both liveState and round data for R2 — cached on replay

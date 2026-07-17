@@ -49,7 +49,7 @@ export const jobsTable = createTable("jobs", {
   renderId: text("render_id"),
   videoUrl: text("video_url"),
   renderStatus: text("render_status").$type<
-    "rendering" | "completed" | "failed"
+    "starting" | "rendering" | "completed" | "failed"
   >(),
   bucketName: text("bucket_name"),
   creditCost: integer("credit_cost").default(1).notNull(),
