@@ -10,11 +10,13 @@ import { and, eq } from "drizzle-orm";
 import { grantCredits } from "~/server/credits/creditHelper";
 import { randomUUID } from "crypto";
 import { safeRealtimeEmit } from "~/lib/realtime/safeRealtimeEmit";
+import { COST_GUARDRAILS } from "~/server/guardrails/rateLimit";
 
 export const generateVideo = inngest.createFunction(
   {
     id: "generate-video",
     retries: 2,
+    concurrency: COST_GUARDRAILS.generationConcurrency,
     cancelOn: [
       {
         event: "job.cancelled",

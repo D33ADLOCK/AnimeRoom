@@ -2,7 +2,6 @@ import z from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { randomUUID } from "crypto";
 import { jobsTable } from "~/server/db/schema";
-import { generateAndSaveAudio } from "~/lib/ai/audio";
 import { inngest } from "~/inngest/client";
 import { grantCredits, spendCredtis } from "~/server/credits/creditHelper";
 import { TRPCError } from "@trpc/server";
@@ -10,14 +9,35 @@ import {
   startVideoRender,
   getVideoRenderProgress,
 } from "~/lib/remotionLambda/renderVideo";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull, lt, or } from "drizzle-orm";
+import { createJobSchema, jobIdSchema } from "~/lib/schemas/job";
+import { enforceRateLimit } from "~/server/guardrails/rateLimit";
 
 export const jobRouter = createTRPCRouter({
   // Mutate from server
   createJob: protectedProcedure
-    .input(z.object({ prompt: z.string() }))
+    .input(createJobSchema)
     .mutation(async ({ ctx, input }) => {
-      const jobId = randomUUID();
+      const jobId = input.requestId;
+
+      const existingJob = await ctx.db.query.jobsTable.findFirst({
+        where: (t, { and, eq }) =>
+          and(eq(t.id, jobId), eq(t.userId, ctx.userId)),
+        columns: { id: true, prompt: true },
+      });
+
+      if (existingJob) {
+        if (existingJob.prompt !== input.prompt) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "This request ID was already used with a different prompt.",
+          });
+        }
+        return { jobId: existingJob.id };
+      }
+
+      await enforceRateLimit({ action: "createJob", userId: ctx.userId });
 
       const [result] = await ctx.db.transaction(async (tx) => {
         const id = await tx
@@ -28,7 +48,25 @@ export const jobRouter = createTRPCRouter({
             prompt: input.prompt,
             jobStatus: "queued",
           })
+          .onConflictDoNothing({ target: jobsTable.id })
           .returning({ jobId: jobsTable.id });
+
+        if (!id[0]) {
+          const concurrent = await tx.query.jobsTable.findFirst({
+            where: (t, { and, eq }) =>
+              and(eq(t.id, jobId), eq(t.userId, ctx.userId)),
+            columns: { id: true, prompt: true },
+          });
+
+          if (concurrent?.prompt !== input.prompt) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "This request ID is already in use.",
+            });
+          }
+
+          return [{ jobId: concurrent.id }];
+        }
 
         await spendCredtis({
           tx,
@@ -42,6 +80,13 @@ export const jobRouter = createTRPCRouter({
 
         return id;
       });
+
+      if (!result) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create generation job.",
+        });
+      }
 
       try {
         await inngest.send({
@@ -108,7 +153,7 @@ export const jobRouter = createTRPCRouter({
     }),
 
   getManifest: protectedProcedure
-    .input(z.object({ jobId: z.string() }))
+    .input(z.object({ jobId: jobIdSchema }))
     .query(async ({ ctx, input }) => {
       const videoManifest = await ctx.db.query.jobsTable.findFirst({
         where: (t, { eq, and }) =>
@@ -124,38 +169,6 @@ export const jobRouter = createTRPCRouter({
       if (!vp) return null;
 
       return vp;
-    }),
-
-  regenerateAudio: protectedProcedure
-    .input(
-      z.object({
-        jobId: z.string(),
-        dialogue: z.string(),
-        voiceId: z.string(),
-        name: z.string(),
-        index: z.number(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.query.jobsTable.findFirst({
-        where: (t, { eq, and }) =>
-          and(eq(t.id, input.jobId), eq(t.userId, ctx.userId)),
-        columns: { id: true },
-      });
-
-      if (!result) throw new Error("Unauthorised user");
-
-      const audio = await generateAndSaveAudio(
-        input.index,
-        input.name,
-        input.voiceId,
-        input.dialogue,
-        input.jobId,
-      );
-
-      if (!audio) throw new Error("Failed to Generate Audio");
-
-      return audio;
     }),
 
   getMyVideos: protectedProcedure.query(async ({ ctx }) => {
@@ -186,7 +199,7 @@ export const jobRouter = createTRPCRouter({
   }),
 
   getPublicManifest: publicProcedure
-    .input(z.object({ jobId: z.string() }))
+    .input(z.object({ jobId: jobIdSchema }))
     .query(async ({ ctx, input }) => {
       const videoManifest = await ctx.db.query.jobsTable.findFirst({
         where: (t, { eq, and }) =>
@@ -204,7 +217,7 @@ export const jobRouter = createTRPCRouter({
   setVisibility: protectedProcedure
     .input(
       z.object({
-        jobId: z.string().uuid(),
+        jobId: jobIdSchema,
         visibility: z.enum(["private", "published"]),
       }),
     )
@@ -232,56 +245,121 @@ export const jobRouter = createTRPCRouter({
     }),
 
   startExport: protectedProcedure
-    .input(z.object({ jobId: z.string() }))
+    .input(z.object({ jobId: jobIdSchema }))
     .mutation(async ({ ctx, input }) => {
-      const job = await ctx.db.query.jobsTable.findFirst({
-        where: (t, { and, eq }) =>
+      await enforceRateLimit({ action: "export", userId: ctx.userId });
+
+      const [job] = await ctx.db
+        .update(jobsTable)
+        .set({
+          renderStatus: "starting",
+          renderId: null,
+          bucketName: null,
+          videoUrl: null,
+        })
+        .where(
           and(
-            eq(t.id, input.jobId),
-            eq(t.userId, ctx.userId),
-            eq(t.jobStatus, "complete"),
+            eq(jobsTable.id, input.jobId),
+            eq(jobsTable.userId, ctx.userId),
+            eq(jobsTable.jobStatus, "complete"),
+            or(
+              isNull(jobsTable.renderStatus),
+              eq(jobsTable.renderStatus, "failed"),
+              and(
+                eq(jobsTable.renderStatus, "starting"),
+                lt(jobsTable.updatedAt, new Date(Date.now() - 15 * 60 * 1_000)),
+              ),
+            ),
           ),
-        columns: { videoManifest: true, id: true },
-      });
+        )
+        .returning({
+          videoManifest: jobsTable.videoManifest,
+          id: jobsTable.id,
+        });
 
-      if (!job)
-        throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      if (!job) {
+        const existing = await ctx.db.query.jobsTable.findFirst({
+          where: (t, { and, eq }) =>
+            and(
+              eq(t.id, input.jobId),
+              eq(t.userId, ctx.userId),
+              eq(t.jobStatus, "complete"),
+            ),
+          columns: {
+            renderId: true,
+            renderStatus: true,
+            videoUrl: true,
+          },
+        });
 
-      if (!job.videoManifest)
+        if (!existing)
+          throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+
+        return { render: existing };
+      }
+
+      if (!job.videoManifest) {
+        await ctx.db
+          .update(jobsTable)
+          .set({ renderStatus: "failed" })
+          .where(
+            and(
+              eq(jobsTable.id, job.id),
+              eq(jobsTable.userId, ctx.userId),
+              eq(jobsTable.renderStatus, "starting"),
+            ),
+          );
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Please wait for the video to complete",
         });
+      }
 
-      const { renderId, bucketName } = await startVideoRender({
-        finalJobState: job.videoManifest,
-        jobId: job.id,
-      });
-
-      const [render] = await ctx.db
-        .update(jobsTable)
-        .set({
-          renderId,
-          bucketName,
-          renderStatus: "rendering",
-        })
-        .where(eq(jobsTable.id, job.id))
-        .returning({
-          renderId: jobsTable.renderId,
-          renderStatus: jobsTable.renderStatus,
+      try {
+        const { renderId, bucketName } = await startVideoRender({
+          finalJobState: job.videoManifest,
+          jobId: job.id,
         });
 
-      if (!render)
+        const [render] = await ctx.db
+          .update(jobsTable)
+          .set({ renderId, bucketName, renderStatus: "rendering" })
+          .where(
+            and(
+              eq(jobsTable.id, job.id),
+              eq(jobsTable.userId, ctx.userId),
+              eq(jobsTable.renderStatus, "starting"),
+            ),
+          )
+          .returning({
+            renderId: jobsTable.renderId,
+            renderStatus: jobsTable.renderStatus,
+          });
+
+        if (!render) throw new Error("Export claim was lost");
+
+        return { render };
+      } catch (error) {
+        await ctx.db
+          .update(jobsTable)
+          .set({ renderStatus: "failed" })
+          .where(
+            and(
+              eq(jobsTable.id, job.id),
+              eq(jobsTable.userId, ctx.userId),
+              eq(jobsTable.renderStatus, "starting"),
+            ),
+          );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to updated the render status",
+          message: "Failed to start export. Please try again.",
+          cause: error,
         });
-
-      return { render };
+      }
     }),
 
   getExportProgress: protectedProcedure
-    .input(z.object({ jobId: z.string() }))
+    .input(z.object({ jobId: jobIdSchema }))
     .query(async ({ ctx, input }) => {
       const job = await ctx.db.query.jobsTable.findFirst({
         where: (t, { and, eq }) =>
@@ -305,6 +383,10 @@ export const jobRouter = createTRPCRouter({
           code: "INTERNAL_SERVER_ERROR",
           message: "Render failed",
         });
+
+      if (job.renderStatus === "starting") {
+        return { done: false, overallProgress: 0, videoUrl: null };
+      }
 
       if (!job.renderId || !job.bucketName)
         throw new TRPCError({
