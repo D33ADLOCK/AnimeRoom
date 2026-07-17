@@ -15,7 +15,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:password@localhost:5432/animeroom
       CLERK_SECRET_KEY: clerk_secret_ci_placeholder
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: clerk_publishable_ci_placeholder
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
       NEXT_PUBLIC_APP_URL: https://ci.animeroom.example
       UPSTASH_REDIS_REST_URL: https://redis.example.com
       UPSTASH_REDIS_REST_TOKEN: redis_ci_placeholder
