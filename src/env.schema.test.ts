@@ -5,6 +5,7 @@ const validEnv = {
   DATABASE_URL: "postgresql://user:pass@localhost:5432/animeroom",
   NODE_ENV: "test",
   CLERK_SECRET_KEY: "clerk-secret",
+  CLERK_WEBHOOK_SIGNING_SECRET: "whsec_test",
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_clerk",
   NEXT_PUBLIC_APP_URL: "https://preview.animeroom.example",
   UPSTASH_REDIS_REST_URL: "https://redis.example.com",
@@ -45,6 +46,7 @@ describe("applicationEnvSchema", () => {
   it.each([
     ["STRIPE_SECRET_KEY", "secret"],
     ["STRIPE_WEBHOOK_SECRET", "secret"],
+    ["CLERK_WEBHOOK_SIGNING_SECRET", "not-a-secret"],
     ["STRIPE_STARTER_PACK_PRICE_ID", "starter"],
     ["NEXT_PUBLIC_APP_URL", "not-a-url"],
     ["REMOTION_SERVE_URL", "not-a-url"],

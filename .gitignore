@@ -51,3 +51,6 @@ yarn-error.log*
 
 # idea files
 .idea
+
+# standalone tooling repo kept alongside the project (has its own .git)
+/launch-readiness-field-guide
