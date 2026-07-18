@@ -59,7 +59,7 @@ export const paymentRouter = createTRPCRouter({
           paymentOrderId: paymentOrderId,
         },
         mode: "payment",
-        success_url: `${env.NEXT_PUBLIC_APP_URL}/payment/success`,
+        success_url: `${env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
       });
 

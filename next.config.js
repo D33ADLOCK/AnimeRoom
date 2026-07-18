@@ -16,11 +16,6 @@ const config = {
       },
       {
         protocol: "https",
-        hostname: "cdn.animeroom.space",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
         hostname: "replicate.delivery",
       },
     ],

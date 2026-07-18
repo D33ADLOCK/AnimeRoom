@@ -8,6 +8,7 @@ export const serverEnvShape = {
     .enum(["development", "test", "production"])
     .default("development"),
   CLERK_SECRET_KEY: nonempty,
+  CLERK_WEBHOOK_SIGNING_SECRET: z.string().startsWith("whsec_"),
   UPSTASH_REDIS_REST_URL: z.string().url(),
   UPSTASH_REDIS_REST_TOKEN: nonempty,
   R2_Access_Key_ID: nonempty,

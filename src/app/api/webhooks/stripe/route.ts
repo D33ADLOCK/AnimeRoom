@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
 
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
-  } catch {
+  } catch (error) {
+    console.error("Stripe webhook signature verification failed:", error);
     return new Response("Invalid signature", { status: 400 });
   }
 
@@ -142,7 +143,14 @@ export async function POST(req: NextRequest) {
 
       return new Response("ok", { status: 200 });
     }
-  } catch {
+  } catch (error) {
+    // A real payment may have succeeded but credit-granting failed here.
+    // Log with the event identifiers so platform logs can answer
+    // "customer paid, got nothing — why?". Returning 500 makes Stripe retry.
+    console.error(
+      `Stripe webhook handler failed (event ${event.id}, type ${event.type}):`,
+      error,
+    );
     return new Response("Webhook handler failed", { status: 500 });
   }
 
