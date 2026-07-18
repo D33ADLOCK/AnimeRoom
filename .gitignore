@@ -12,6 +12,9 @@ remotion/.cache/
 # generated AI assets
 /public/ai/
 
+# runtime pipeline logs
+/logs
+
 # testing
 /coverage
 
