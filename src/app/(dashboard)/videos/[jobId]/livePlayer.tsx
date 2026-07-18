@@ -93,11 +93,6 @@ export default function LivePlayer({
         {status?.jobStatus === "queued" && (
           <p className="text-sm">Your generation is waiting to start.</p>
         )}
-        {status?.jobStatus === "generating" && (
-          <p className="text-sm">
-            This page recovers from refreshes and keeps checking durable status.
-          </p>
-        )}
         {status?.jobStatus === "failed" && (
           <div className="text-sm">
             <p>{status.safeError ?? "Video generation did not complete."}</p>

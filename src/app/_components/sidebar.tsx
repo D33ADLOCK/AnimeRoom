@@ -2,9 +2,9 @@
 
 import { SignedIn, UserButton, useUser } from "@clerk/nextjs";
 import {
-  ChevronDown,
-  CreditCard,
   Compass,
+  CreditCard,
+  Home,
   LifeBuoy,
   Sparkles,
   Video,
@@ -13,11 +13,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "~/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -29,19 +24,17 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarSeparator,
 } from "~/components/ui/sidebar";
 
 /* ─── Menu data ─── */
 
-const topItems = [
-  { title: "Create", href: "/create", icon: Sparkles, accent: true },
-];
+// The one accent action, kept visually prominent.
+const createItem = { title: "Create", href: "/create", icon: Sparkles };
 
-const videosSubItems = [
+// Flat, top-level browse items (previously hidden inside a "Videos" dropdown).
+const primaryItems = [
+  { title: "Home", href: "/", icon: Home },
   { title: "Discover", href: "/videos/discover", icon: Compass },
   { title: "My Videos", href: "/videos", icon: Video },
 ];
@@ -55,7 +48,6 @@ const secondaryItems = [
 
 function AppSidebar() {
   const pathName = usePathname();
-  const isVideosActive = pathName.startsWith("/videos");
   const { user } = useUser();
   const displayName = user?.fullName ?? user?.username ?? "Your Account";
 
@@ -89,21 +81,36 @@ function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="gap-3 p-2">
               {/* Create (accent) */}
-              {topItems.map((item) => {
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="flex gap-4"
+                  size="lg"
+                  asChild
+                  isActive={pathName === createItem.href}
+                >
+                  <Link
+                    href={createItem.href}
+                    className="nb-btn rounded-none border-[3px] border-[var(--color-nb-border)] bg-[var(--color-nb-pink)] px-4 py-2 font-extrabold text-[var(--color-nb-text)] shadow-[4px_4px_0px_var(--color-nb-shadow)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_var(--color-nb-shadow)]"
+                  >
+                    <createItem.icon className="!h-5 !w-5" />
+                    <span>{createItem.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Flat browse items */}
+              {primaryItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathName === item.href;
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
-                      className="flex gap-4"
                       size="lg"
                       asChild
                       isActive={isActive}
+                      className="rounded-none border-[3px] border-[var(--color-nb-border)] font-bold hover:bg-[var(--color-nb-yellow)]"
                     >
-                      <Link
-                        href={item.href}
-                        className="nb-btn rounded-none border-[3px] border-[var(--color-nb-border)] bg-[var(--color-nb-pink)] px-4 py-2 font-extrabold text-[var(--color-nb-text)] shadow-[4px_4px_0px_var(--color-nb-shadow)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_var(--color-nb-shadow)]"
-                      >
+                      <Link href={item.href}>
                         <Icon className="!h-5 !w-5" />
                         <span>{item.title}</span>
                       </Link>
@@ -111,48 +118,6 @@ function AppSidebar() {
                   </SidebarMenuItem>
                 );
               })}
-
-              {/* Videos (collapsible dropdown) */}
-              <Collapsible
-                defaultOpen={isVideosActive}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton
-                      size="lg"
-                      isActive={isVideosActive}
-                      className="rounded-none border-[3px] border-[var(--color-nb-border)] font-bold hover:bg-[var(--color-nb-yellow)]"
-                    >
-                      <Video className="h-5 w-5" />
-                      <span>Videos</span>
-                      <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub className="border-l-[3px] border-[var(--color-nb-border)]">
-                      {videosSubItems.map((sub) => {
-                        const SubIcon = sub.icon;
-                        const isSubActive = pathName === sub.href;
-                        return (
-                          <SidebarMenuSubItem key={sub.href}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={isSubActive}
-                              className="rounded-none font-semibold hover:bg-[var(--color-nb-lavender)]"
-                            >
-                              <Link href={sub.href}>
-                                <SubIcon className="h-4 w-4" />
-                                <span>{sub.title}</span>
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        );
-                      })}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

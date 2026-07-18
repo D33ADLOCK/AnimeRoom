@@ -208,7 +208,7 @@ export default function CreatePage() {
           )}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {starterTemplates.map((template) => {
             const Icon = template.icon;
             const isActive = activeTemplate === template.title;
@@ -218,15 +218,13 @@ export default function CreatePage() {
                 key={template.title}
                 type="button"
                 onClick={() => applyTemplate(template)}
-                className={`nb-card group relative flex min-h-[205px] cursor-pointer flex-col justify-between overflow-hidden p-4 text-left transition-transform hover:-translate-y-1 ${template.surface} ${
+                className={`nb-card relative flex min-h-[205px] cursor-pointer flex-col justify-between overflow-hidden p-4 text-left transition-transform hover:-translate-y-1 ${template.surface} ${
                   isActive
                     ? "translate-x-[3px] translate-y-[3px] shadow-[3px_3px_0px_var(--color-nb-shadow)]"
                     : ""
                 }`}
                 aria-pressed={isActive}
               >
-                <span className="absolute top-3 right-3 h-14 w-14 rotate-12 border-[3px] border-[var(--color-nb-border)] bg-white/55 transition-transform group-hover:rotate-45" />
-                <span className="absolute right-12 bottom-6 h-8 w-8 border-[3px] border-[var(--color-nb-border)] bg-white/45 transition-transform group-hover:-rotate-12" />
                 <span className="relative flex items-start justify-between gap-3">
                   <span className="rounded-none border-[3px] border-[var(--color-nb-border)] bg-white p-2 shadow-[2px_2px_0px_var(--color-nb-shadow)]">
                     <Icon className="h-5 w-5" />
