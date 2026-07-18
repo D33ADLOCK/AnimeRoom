@@ -55,7 +55,12 @@ export default function LivePlayer({
     channels: [`job:${jobId}`],
     events: ["pipeline-events"],
     onData: ({ data }) => {
-      if (data.type === "previewUpdate") setLiveState(data);
+      if (data.type === "previewUpdate") {
+        // Drop stale/duplicate emits so the preview only ever moves forward.
+        setLiveState((prev) =>
+          data.data.version > prev.data.version ? data : prev,
+        );
+      }
       void statusQuery.refetch();
       if (data.type === "completed") void manifestQuery.refetch();
     },

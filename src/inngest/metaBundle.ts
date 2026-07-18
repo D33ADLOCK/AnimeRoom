@@ -44,12 +44,16 @@ export const metaBundle = async ({
     },
   );
 
-  // Emit title + subtitle immediately (no thumbnail yet)
-  await stateUpdateAndEmit(liveState, jobId, (state) => {
-    state.data.meta.battleTitle = battleTitle;
-    state.data.meta.shortSubtitle = shortSubtitle;
-    state.data.meta.thumbnailUrl = thumbnailTempUrl;
+  // Emit title + subtitle inside a step so it fires once; restore on replay.
+  const emittedState = await step.run("emit-meta", async () => {
+    await stateUpdateAndEmit(liveState, jobId, (state) => {
+      state.data.meta.battleTitle = battleTitle;
+      state.data.meta.shortSubtitle = shortSubtitle;
+      state.data.meta.thumbnailUrl = thumbnailTempUrl;
+    });
+    return liveState;
   });
+  Object.assign(liveState.data, emittedState.data);
 
   // Save thumbnail to R2 in background
   const thumbnailKey = path.posix.join(jobId, "image", "thumbnail.png");

@@ -58,36 +58,44 @@ export const characterBundle = async ({
     },
   );
 
-  // Emit announcer first (not a step — just a quick state update)
-  if (!liveState.data.announcer.ready) {
-    await emitAnnouncer({ jobId, liveState });
-  }
+  // Emit announcer + both character cards inside a step so each emit fires
+  // exactly once. On replay the step is memoized (no re-emit, and the random
+  // announcer audio is picked only once); liveState is restored from the
+  // cached return below.
+  const emittedState = await step.run("emit-character-cards", async () => {
+    if (!liveState.data.announcer.ready) {
+      await emitAnnouncer({ jobId, liveState });
+    }
 
-  // Emit character1 state
-  await stateUpdateAndEmit(liveState, jobId, (state) => {
-    const char1 = state.data.characterStats.character1;
-    char1.ready = true;
-    char1.name = characterImages.character1.name;
-    char1.title = characterImages.character1.title;
-    char1.imagePrompt = characterImages.character1.imagePrompt;
-    char1.imageUrl = characterImages.character1.imageUrl;
-    char1.stats = characterImages.character1.stats;
-    char1.skills = characterImages.character1.skills;
-    char1.durationFrames = 120;
+    await stateUpdateAndEmit(liveState, jobId, (state) => {
+      const char1 = state.data.characterStats.character1;
+      char1.ready = true;
+      char1.name = characterImages.character1.name;
+      char1.title = characterImages.character1.title;
+      char1.imagePrompt = characterImages.character1.imagePrompt;
+      char1.imageUrl = characterImages.character1.imageUrl;
+      char1.stats = characterImages.character1.stats;
+      char1.skills = characterImages.character1.skills;
+      char1.durationFrames = 120;
+    });
+
+    await stateUpdateAndEmit(liveState, jobId, (state) => {
+      const char2 = state.data.characterStats.character2;
+      char2.ready = true;
+      char2.name = characterImages.character2.name;
+      char2.title = characterImages.character2.title;
+      char2.imagePrompt = characterImages.character2.imagePrompt;
+      char2.imageUrl = characterImages.character2.imageUrl;
+      char2.stats = characterImages.character2.stats;
+      char2.skills = characterImages.character2.skills;
+      char2.durationFrames = 120;
+    });
+
+    return liveState;
   });
 
-  // Emit character2 state
-  await stateUpdateAndEmit(liveState, jobId, (state) => {
-    const char2 = state.data.characterStats.character2;
-    char2.ready = true;
-    char2.name = characterImages.character2.name;
-    char2.title = characterImages.character2.title;
-    char2.imagePrompt = characterImages.character2.imagePrompt;
-    char2.imageUrl = characterImages.character2.imageUrl;
-    char2.stats = characterImages.character2.stats;
-    char2.skills = characterImages.character2.skills;
-    char2.durationFrames = 120;
-  });
+  // Restore liveState from cached return (on replay the step body didn't run)
+  Object.assign(liveState.data, emittedState.data);
 
   // Queue R2 uploads in background
   r2Promise.push(
